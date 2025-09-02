@@ -1,0 +1,16 @@
+.aiw-root{position:fixed;right:20px;bottom:20px;z-index:2147483647}
+.aiw-fab{width:52px;height:52px;border-radius:26px;border:none;cursor:pointer;background:#1f7aec;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.2);font-size:20px}
+.aiw-panel{position:fixed;right:84px;bottom:20px;width:320px;height:280px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.18);overflow:hidden;transform:translateY(16px);opacity:0;pointer-events:none;transition:all .18s ease}
+.aiw-open{opacity:1;transform:translateY(0);pointer-events:auto}
+.aiw-header{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-bottom:1px solid #eee}
+.aiw-close{border:none;background:transparent;cursor:pointer;font-size:18px}
+.aiw-output{padding:8px 10px;height:160px;overflow-y:auto;white-space:pre-wrap;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;font-size:14px}
+.aiw-input{padding:8px 10px}
+.aiw-input textarea{width:100%;height:60px;resize:vertical;font-size:14px;padding:8px}
+.aiw-controls{display:flex;align-items:center;justify-content:flex-end;margin-top:6px}
+.aiw-btn{padding:8px 12px;background:#555;color:#fff;border:none;border-radius:6px;cursor:pointer}
+.aiw-primary{background:#1f7aec}
+.aiw-line{margin:4px 0}
+.aiw-user{color:#222}
+.aiw-assistant{color:#0b5}
+.aiw-error{color:#b00}
