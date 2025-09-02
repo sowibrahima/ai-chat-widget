@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "description": "Floating AI chat widget for Open edX MFEs (plugin-ready)",
   "main": "dist/ai-chat-plugin.js",
-  "module": "dist/ai-chat-plugin.esm.js",
+  "module": "dist/ai-chat-plugin.js",
   "exports": {
     ".": {
-      "import": "./dist/ai-chat-plugin.esm.js",
+      "import": "./dist/ai-chat-plugin.js",
       "default": "./dist/ai-chat-plugin.js"
     }
   },
@@ -15,7 +15,8 @@
   ],
   "scripts": {
     "build": "webpack --mode=production",
-    "build:dev": "webpack --mode=development --watch"
+    "build:dev": "webpack --mode=development --watch",
+    "prepare": "webpack --mode=production"
   },
   "peerDependencies": {
     "react": ">=16.14 || >=17 || >=18",
