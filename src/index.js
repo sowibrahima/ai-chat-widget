@@ -1,5 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+// Use React from global context if available, fallback to import
+const React = window.React || require('react');
+const ReactDOM = window.ReactDOM || require('react-dom');
 import AIChatWidget from './AIChatWidget.jsx';
 
 // Helper: mount widget into a DOM container
@@ -16,6 +17,23 @@ export function mountAIWidget({
     React.createElement(AIChatWidget, { onSend, onStartStream, title, placeholder, disabled }),
     container
   );
+}
+
+// Factory function to create a send handler with configurable API URL
+export function createSendHandler(apiUrl) {
+  return async function(message) {
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+      },
+      credentials: 'include',
+      body: JSON.stringify({ message }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  };
 }
 
 // Minimal default networking using fetch; MFEs should pass authenticatedHttpClient alternatives
@@ -86,6 +104,17 @@ export function initPlugin(options = {}) {
     // Fallback: mount globally
     initStandalone(options);
   }
+}
+
+// Factory to create a pre-configured widget component
+export function createConfiguredWidget(config) {
+  return function ConfiguredAIChatWidget(props) {
+    return React.createElement(AIChatWidget, {
+      ...props,
+      onSend: config.apiUrl ? createSendHandler(config.apiUrl) : props.onSend,
+      title: config.title || props.title,
+    });
+  };
 }
 
 export default AIChatWidget;
