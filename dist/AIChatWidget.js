@@ -12,8 +12,8 @@ function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
 /**
  * AIChatWidget
- * - Main AI chat component following edX frontend plugin patterns
- * - Uses hooks for data management and API calls
+ * - Clean and modern AI chat component
+ * - Simple but professional design
  */
 function AIChatWidget(_ref) {
   let {
@@ -59,61 +59,71 @@ function AIChatWidget(_ref) {
       setBusy(false);
     }
   }
-  function handleStream() {
-    try {
-      const ctrl = onStartStream?.();
-      append('[stream] started');
-      // Caller should append partials by controlling parent state, or replace this with prop callback.
-      // We keep a minimal message here; advanced streaming handled by integrator.
-      if (ctrl && typeof ctrl.close === 'function') {
-        // no-op; integrator will close when done
-      }
-    } catch (e) {
-      append(`[stream] error: ${e?.message || String(e)}`, 'error');
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   }
+  if (!open) {
+    return /*#__PURE__*/_react.default.createElement("div", {
+      className: "ai-chat-widget-fab"
+    }, /*#__PURE__*/_react.default.createElement("button", {
+      className: "ai-chat-widget-fab-button",
+      onClick: () => setOpen(true),
+      title: title,
+      "aria-label": `Open ${title}`
+    }, "\uD83E\uDD16"));
+  }
   return /*#__PURE__*/_react.default.createElement("div", {
-    className: "aiw-root"
-  }, /*#__PURE__*/_react.default.createElement("button", {
-    type: "button",
-    className: "aiw-fab",
-    "aria-label": "Open AI Assistant",
-    onClick: () => setOpen(o => !o),
-    disabled: disabled
-  }, "\u2726"), /*#__PURE__*/_react.default.createElement("div", {
-    className: `aiw-panel ${open ? 'aiw-open' : ''}`
+    className: "ai-chat-widget-container"
   }, /*#__PURE__*/_react.default.createElement("div", {
-    className: "aiw-header"
-  }, /*#__PURE__*/_react.default.createElement("strong", null, title), /*#__PURE__*/_react.default.createElement("button", {
-    type: "button",
-    className: "aiw-close",
+    className: "ai-chat-widget"
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-header"
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-title-section"
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-icon"
+  }, "\uD83E\uDD16"), /*#__PURE__*/_react.default.createElement("h3", {
+    className: "ai-chat-widget-title"
+  }, title)), /*#__PURE__*/_react.default.createElement("button", {
+    className: "ai-chat-widget-close",
     onClick: () => setOpen(false),
-    "aria-label": "Close"
-  }, "\xD7")), /*#__PURE__*/_react.default.createElement("div", {
-    className: "aiw-output",
-    role: "log",
-    "aria-live": "polite"
-  }, lines.map(l => /*#__PURE__*/_react.default.createElement("div", {
-    key: l.id,
-    className: `aiw-line aiw-${l.role}`
-  }, l.text))), /*#__PURE__*/_react.default.createElement("div", {
-    className: "aiw-input"
+    title: "Close",
+    "aria-label": "Close chat"
+  }, "\u2715")), /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-body"
+  }, lines.length === 0 && /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-welcome"
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: "welcome-icon"
+  }, "\uD83D\uDC4B"), /*#__PURE__*/_react.default.createElement("p", null, "Hi! I'm here to help. Ask me anything!")), lines.map(line => /*#__PURE__*/_react.default.createElement("div", {
+    key: line.id,
+    className: `ai-chat-widget-line ai-chat-widget-line-${line.role}`
+  }, line.text)), busy && /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing"
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: "typing-indicator"
+  }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking...")), /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-footer"
+  }, error && /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-error"
+  }, error), /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-input-container"
   }, /*#__PURE__*/_react.default.createElement("textarea", {
     ref: inputRef,
+    className: "ai-chat-widget-input",
     placeholder: placeholder,
-    disabled: !canSend
-  }), /*#__PURE__*/_react.default.createElement("div", {
-    className: "aiw-controls"
-  }, /*#__PURE__*/_react.default.createElement("button", {
-    type: "button",
-    className: "aiw-btn aiw-primary",
+    disabled: !canSend,
+    onKeyDown: handleKeyDown,
+    rows: 2
+  }), /*#__PURE__*/_react.default.createElement("button", {
+    className: `ai-chat-widget-send ${!canSend ? 'disabled' : ''}`,
     onClick: handleSend,
-    disabled: !canSend
-  }, "Send"), /*#__PURE__*/_react.default.createElement("button", {
-    type: "button",
-    className: "aiw-btn",
-    onClick: handleStream,
-    disabled: disabled
-  }, "Test Stream")))));
+    disabled: !canSend,
+    title: "Send message",
+    "aria-label": "Send message"
+  }, busy ? '⏳' : '➤')))));
 }
 //# sourceMappingURL=AIChatWidget.js.map

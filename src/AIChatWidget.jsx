@@ -5,8 +5,8 @@ import './AIChatWidget.css';
 
 /**
  * AIChatWidget
- * - Main AI chat component following edX frontend plugin patterns
- * - Uses hooks for data management and API calls
+ * - Clean and modern AI chat component
+ * - Simple but professional design
  */
 export default function AIChatWidget({
   chatAppData = {},
@@ -47,47 +47,94 @@ export default function AIChatWidget({
     }
   }
 
-  function handleStream() {
-    try {
-      const ctrl = onStartStream?.();
-      append('[stream] started');
-      // Caller should append partials by controlling parent state, or replace this with prop callback.
-      // We keep a minimal message here; advanced streaming handled by integrator.
-      if (ctrl && typeof ctrl.close === 'function') {
-        // no-op; integrator will close when done
-      }
-    } catch (e) {
-      append(`[stream] error: ${e?.message || String(e)}`, 'error');
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   }
 
-  return (
-    <div className="aiw-root">
-      <button
-        type="button"
-        className="aiw-fab"
-        aria-label="Open AI Assistant"
-        onClick={() => setOpen(o => !o)}
-        disabled={disabled}
-      >
-        ✦
-      </button>
+  if (!open) {
+    return (
+      <div className="ai-chat-widget-fab">
+        <button
+          className="ai-chat-widget-fab-button"
+          onClick={() => setOpen(true)}
+          title={title}
+          aria-label={`Open ${title}`}
+        >
+          🤖
+        </button>
+      </div>
+    );
+  }
 
-      <div className={`aiw-panel ${open ? 'aiw-open' : ''}`}>
-        <div className="aiw-header">
-          <strong>{title}</strong>
-          <button type="button" className="aiw-close" onClick={() => setOpen(false)} aria-label="Close">×</button>
+  return (
+    <div className="ai-chat-widget-container">
+      <div className="ai-chat-widget">
+        <div className="ai-chat-widget-header">
+          <div className="ai-chat-widget-title-section">
+            <div className="ai-chat-widget-icon">🤖</div>
+            <h3 className="ai-chat-widget-title">{title}</h3>
+          </div>
+          <button
+            className="ai-chat-widget-close"
+            onClick={() => setOpen(false)}
+            title="Close"
+            aria-label="Close chat"
+          >
+            ✕
+          </button>
         </div>
-        <div className="aiw-output" role="log" aria-live="polite">
-          {lines.map(l => (
-            <div key={l.id} className={`aiw-line aiw-${l.role}`}>{l.text}</div>
+        
+        <div className="ai-chat-widget-body">
+          {lines.length === 0 && (
+            <div className="ai-chat-widget-welcome">
+              <div className="welcome-icon">👋</div>
+              <p>Hi! I'm here to help. Ask me anything!</p>
+            </div>
+          )}
+          {lines.map(line => (
+            <div key={line.id} className={`ai-chat-widget-line ai-chat-widget-line-${line.role}`}>
+              {line.text}
+            </div>
           ))}
+          {busy && (
+            <div className="ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing">
+              <div className="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              Thinking...
+            </div>
+          )}
         </div>
-        <div className="aiw-input">
-          <textarea ref={inputRef} placeholder={placeholder} disabled={!canSend} />
-          <div className="aiw-controls">
-            <button type="button" className="aiw-btn aiw-primary" onClick={handleSend} disabled={!canSend}>Send</button>
-            <button type="button" className="aiw-btn" onClick={handleStream} disabled={disabled}>Test Stream</button>
+        
+        <div className="ai-chat-widget-footer">
+          {error && (
+            <div className="ai-chat-widget-error">
+              {error}
+            </div>
+          )}
+          <div className="ai-chat-widget-input-container">
+            <textarea
+              ref={inputRef}
+              className="ai-chat-widget-input"
+              placeholder={placeholder}
+              disabled={!canSend}
+              onKeyDown={handleKeyDown}
+              rows={2}
+            />
+            <button
+              className={`ai-chat-widget-send ${!canSend ? 'disabled' : ''}`}
+              onClick={handleSend}
+              disabled={!canSend}
+              title="Send message"
+              aria-label="Send message"
+            >
+              {busy ? '⏳' : '➤'}
+            </button>
           </div>
         </div>
       </div>
