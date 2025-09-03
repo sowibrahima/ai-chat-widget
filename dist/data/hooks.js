@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.useAIChatData = exports.useAIChat = void 0;
 var _react = require("react");
+var _auth = require("@edx/frontend-platform/auth");
 /**
  * Hook to manage AI chat application data and configuration
  */
@@ -40,22 +41,11 @@ const useAIChat = apiUrl => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          message
-        })
+      const client = (0, _auth.getAuthenticatedHttpClient)();
+      const response = await client.post(apiUrl, {
+        message
       });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      const result = await response.json();
-      return result;
+      return response.data;
     } catch (err) {
       setError(err.message);
       throw err;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 
 /**
  * Hook to manage AI chat application data and configuration
@@ -36,22 +37,9 @@ export const useAIChat = (apiUrl) => {
     setError(null);
     
     try {
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-        },
-        credentials: 'include',
-        body: JSON.stringify({ message }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      const result = await response.json();
-      return result;
+      const client = getAuthenticatedHttpClient();
+      const response = await client.post(apiUrl, { message });
+      return response.data;
     } catch (err) {
       setError(err.message);
       throw err;

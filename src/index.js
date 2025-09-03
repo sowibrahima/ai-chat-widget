@@ -1,4 +1,5 @@
 import React, { StrictMode } from 'react';
+import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import AIChatWidget from './AIChatWidget';
 import { useAIChatData } from './data/hooks';
 
@@ -31,30 +32,29 @@ export function mountAIWidget({
 // Factory function to create a send handler with configurable API URL
 export function createSendHandler(apiUrl) {
   return async function(message) {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-      },
-      credentials: 'include',
-      body: JSON.stringify({ message }),
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json();
+    const client = getAuthenticatedHttpClient();
+    const response = await client.post(apiUrl, { message });
+    return response.data;
   };
 }
 
-// Minimal default networking using fetch; MFEs should pass authenticatedHttpClient alternatives
+// Default networking using authenticated client for MFE environments
 async function defaultSend(message, baseUrl) {
-  const res = await fetch(`${baseUrl}/api/ai-assistant/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ message }),
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.json();
+  try {
+    const client = getAuthenticatedHttpClient();
+    const response = await client.post(`${baseUrl}/api/ai-assistant/chat`, { message });
+    return response.data;
+  } catch (error) {
+    // Fallback to fetch for non-MFE environments where authenticated client might not be available
+    const res = await fetch(`${baseUrl}/api/ai-assistant/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ message }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  }
 }
 
 export function initStandalone({ baseUrl = window.location.origin } = {}) {

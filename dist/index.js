@@ -23,6 +23,7 @@ Object.defineProperty(exports, "useAIChatData", {
   }
 });
 var _react = _interopRequireWildcard(require("react"));
+var _auth = require("@edx/frontend-platform/auth");
 var _AIChatWidget = _interopRequireDefault(require("./AIChatWidget"));
 var _hooks = require("./data/hooks");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
@@ -60,36 +61,37 @@ function mountAIWidget(_ref) {
 // Factory function to create a send handler with configurable API URL
 function createSendHandler(apiUrl) {
   return async function (message) {
-    const response = await fetch(apiUrl, {
+    const client = (0, _auth.getAuthenticatedHttpClient)();
+    const response = await client.post(apiUrl, {
+      message
+    });
+    return response.data;
+  };
+}
+
+// Default networking using authenticated client for MFE environments
+async function defaultSend(message, baseUrl) {
+  try {
+    const client = (0, _auth.getAuthenticatedHttpClient)();
+    const response = await client.post(`${baseUrl}/api/ai-assistant/chat`, {
+      message
+    });
+    return response.data;
+  } catch (error) {
+    // Fallback to fetch for non-MFE environments where authenticated client might not be available
+    const res = await fetch(`${baseUrl}/api/ai-assistant/chat`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        'Content-Type': 'application/json'
       },
       credentials: 'include',
       body: JSON.stringify({
         message
       })
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.json();
-  };
-}
-
-// Minimal default networking using fetch; MFEs should pass authenticatedHttpClient alternatives
-async function defaultSend(message, baseUrl) {
-  const res = await fetch(`${baseUrl}/api/ai-assistant/chat`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include',
-    body: JSON.stringify({
-      message
-    })
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  }
 }
 function initStandalone() {
   let {
