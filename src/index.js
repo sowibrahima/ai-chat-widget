@@ -32,9 +32,24 @@ export function mountAIWidget({
 // Factory function to create a send handler with configurable API URL
 export function createSendHandler(apiUrl) {
   return async function(message) {
-    const client = getAuthenticatedHttpClient();
-    const response = await client.post(apiUrl, { message });
-    return response.data;
+    try {
+      const client = getAuthenticatedHttpClient();
+      const response = await client.post(apiUrl, { message });
+      return response.data;
+    } catch (error) {
+      // Fallback to fetch for cross-origin issues or when authenticated client fails
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        },
+        credentials: 'include',
+        body: JSON.stringify({ message }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    }
   };
 }
 
