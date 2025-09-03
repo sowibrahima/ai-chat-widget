@@ -7,7 +7,7 @@ import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 export const useAIChatData = () => {
   const [chatAppData, setChatAppData] = useState({
     showAIChat: true,
-    apiUrl: '/api/ai-assistant/chat',
+    apiUrl: 'http://apps.local.openedx.io:8000/api/ai-assistant/chat',
     title: 'AI Assistant',
     placeholder: 'Ask me anything...',
     disabled: false,
