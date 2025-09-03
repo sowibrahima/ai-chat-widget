@@ -1,18 +1,24 @@
 import React, { useMemo, useRef, useState } from 'react';
+import classNames from 'classnames';
+import { useAIChat } from './data/hooks';
 import './AIChatWidget.css';
 
 /**
  * AIChatWidget
- * - Pure UI component.
- * - Networking is delegated via props to integrate with MFEs (e.g., authenticatedHttpClient).
+ * - Main AI chat component following edX frontend plugin patterns
+ * - Uses hooks for data management and API calls
  */
 export default function AIChatWidget({
-  title = 'AI Assistant',
-  placeholder = 'Ask me anything…',
-  onSend, // async (message: string) => Promise<string | { text?: string }>
-  onStartStream, // () => { close: () => void } or () => void
-  disabled = false,
+  chatAppData = {},
 }) {
+  const {
+    title = 'AI Assistant',
+    placeholder = 'Ask me anything…',
+    apiUrl = '/api/ai-assistant/chat',
+    disabled = false,
+  } = chatAppData;
+
+  const { sendMessage, isLoading, error } = useAIChat(apiUrl);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState([]);
@@ -29,10 +35,9 @@ export default function AIChatWidget({
     if (!v || !canSend) return;
     append(`You: ${v}`, 'user');
     inputRef.current.value = '';
-    if (!onSend) return;
     setBusy(true);
     try {
-      const res = await onSend(v);
+      const res = await sendMessage(v);
       const text = typeof res === 'string' ? res : (res?.text ?? JSON.stringify(res));
       append(text, 'assistant');
     } catch (e) {

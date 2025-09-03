@@ -1,7 +1,16 @@
-// Use React from global context if available, fallback to import
-const React = window.React || require('react');
-const ReactDOM = window.ReactDOM || require('react-dom');
-import AIChatWidget from './AIChatWidget.jsx';
+import React, { StrictMode } from 'react';
+import AIChatWidget from './AIChatWidget';
+import { useAIChatData } from './data/hooks';
+
+export const AIChatTray = () => {
+  const { chatAppData } = useAIChatData();
+  return chatAppData?.showAIChat
+    ? <StrictMode><AIChatWidget chatAppData={chatAppData} /></StrictMode>
+    : '';
+};
+
+export default AIChatTray;
+export { AIChatWidget, useAIChatData };
 
 // Helper: mount widget into a DOM container
 export function mountAIWidget({
@@ -116,5 +125,3 @@ export function createConfiguredWidget(config) {
     });
   };
 }
-
-export default AIChatWidget;
