@@ -332,6 +332,7 @@
   overflow-y: auto;
   padding: 0;
   margin: 0;
+  text-align: center;
 }
 
 .ai-chat-widget-input:focus {
