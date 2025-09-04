@@ -13,7 +13,7 @@ function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r
 /**
  * CourseGenerationButton
  * - Simple button component that opens the course generation modal
- * - Handles the modal state and API calls
+ * - Handles the modal state and callbacks
  * - Can be easily imported and used in Tutor plugin slots
  */
 function CourseGenerationButton(_ref) {
@@ -21,84 +21,36 @@ function CourseGenerationButton(_ref) {
     buttonText = "AI Generate",
     buttonIcon = "🪄",
     buttonClassName = "btn btn-primary",
-    uploadUrl = "/api/ai-assistant/upload",
     maxFileSizeMB = 50,
     onSuccess = () => {},
-    onError = () => {}
+    onError = () => {},
+    availableModels = [{
+      id: 'gpt-4o',
+      name: 'GPT-4o (Recommended)',
+      description: 'Best quality, slower'
+    }, {
+      id: 'gpt-4o-mini',
+      name: 'GPT-4o Mini',
+      description: 'Faster, good quality'
+    }]
   } = _ref;
   const [showModal, setShowModal] = (0, _react.useState)(false);
-  const {
-    generateCourse,
-    isLoading
-  } = (0, _hooks.useCourseGeneration)();
   const courseId = (0, _hooks.getCourseIdFromUrl)();
-  const handleGenerate = async _ref2 => {
-    let {
-      file,
-      instructions
-    } = _ref2;
-    if (!courseId) {
-      const error = new Error('No course context found. Please make sure you are on a course page.');
-      onError(error);
-      throw error;
-    }
-    try {
-      // First upload the PDF file
-      const formData = new FormData();
-      formData.append('file', file);
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData,
-        credentials: 'same-origin',
-        headers: {
-          'X-CSRFToken': getCsrfToken()
-        }
-      });
-      if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json();
-        throw new Error(errorData.error || 'Failed to upload file');
-      }
-      const uploadResult = await uploadResponse.json();
-
-      // Then create the generation job using the dynamic course-aware endpoint
-      const jobData = {
-        job_type: 'course_creation',
-        input_data: {
-          file_id: uploadResult.file_id,
-          instructions: instructions
-        }
-      };
-      const jobResult = await generateCourse(courseId, jobData);
-
-      // Call success callback
-      onSuccess({
-        jobId: jobResult.id,
-        message: 'Course generation started successfully! You will be notified when it completes.'
-      });
-    } catch (error) {
-      console.error('Course generation error:', error);
-      onError(error);
-      throw error; // Re-throw so modal can handle it
-    }
+  const handleSuccess = jobData => {
+    onSuccess({
+      jobId: jobData.id,
+      message: 'Course generation completed successfully!',
+      jobData: jobData
+    });
   };
-
-  // Helper function to get CSRF token
-  const getCsrfToken = () => {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      const [name, value] = cookie.trim().split('=');
-      if (name === 'csrftoken') {
-        return value;
-      }
-    }
-    // Fallback: try to get from meta tag
-    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-    return csrfMeta ? csrfMeta.getAttribute('content') : '';
+  const handleError = error => {
+    console.error('Course generation error:', error);
+    onError(error);
   };
   return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("button", {
     className: buttonClassName,
     onClick: () => setShowModal(true),
-    disabled: !courseId || isLoading,
+    disabled: !courseId,
     title: !courseId ? "Course context required" : "Generate course content with AI",
     "aria-label": "Generate course content with AI"
   }, /*#__PURE__*/_react.default.createElement("span", {
@@ -109,8 +61,11 @@ function CourseGenerationButton(_ref) {
   }, buttonIcon), buttonText), /*#__PURE__*/_react.default.createElement(_CourseGenerationModal.default, {
     isOpen: showModal,
     onClose: () => setShowModal(false),
-    onGenerate: handleGenerate,
-    maxFileSizeMB: maxFileSizeMB
+    onSuccess: handleSuccess,
+    onError: handleError,
+    courseId: courseId,
+    maxFileSizeMB: maxFileSizeMB,
+    availableModels: availableModels
   }));
 }
 //# sourceMappingURL=CourseGenerationButton.js.map

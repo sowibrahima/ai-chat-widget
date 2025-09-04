@@ -107,7 +107,7 @@ const useAIChatData = () => {
 };
 
 /**
- * Hook to handle AI chat messaging
+ * Hook to handle AI chat messaging with streaming support
  */
 exports.useAIChatData = useAIChatData;
 const useAIChat = function (apiUrl) {
@@ -169,8 +169,79 @@ const useAIChat = function (apiUrl) {
       setIsLoading(false);
     }
   };
+  const sendMessageStream = async (message, onChunk) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const payload = {
+        message
+      };
+      if (currentSessionId) {
+        payload.session_id = currentSessionId;
+      }
+
+      // Use streaming endpoint
+      const streamUrl = apiUrl.replace('/chat', '/chat/stream');
+      const response = await fetch(streamUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let fullResponse = '';
+      while (true) {
+        const {
+          done,
+          value
+        } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, {
+          stream: true
+        });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') {
+              return fullResponse;
+            }
+            try {
+              const chunk = JSON.parse(data);
+              const content = chunk.choices?.[0]?.delta?.content;
+              if (content) {
+                fullResponse += content;
+                onChunk(content);
+              }
+            } catch (e) {
+              // Skip invalid JSON chunks
+              console.warn('Invalid chunk JSON:', data);
+            }
+          }
+        }
+      }
+      return fullResponse;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return {
     sendMessage,
+    sendMessageStream,
     isLoading,
     error,
     sessionId: currentSessionId
@@ -184,6 +255,71 @@ exports.useAIChat = useAIChat;
 const useCourseGeneration = () => {
   const [isLoading, setIsLoading] = (0, _react.useState)(false);
   const [error, setError] = (0, _react.useState)(null);
+  const uploadFile = async file => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const client = (0, _auth.getAuthenticatedHttpClient)();
+      const response = await client.post('/api/ai-assistant/upload/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'Failed to upload file';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const createGenerationJob = async jobData => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const client = (0, _auth.getAuthenticatedHttpClient)();
+      const response = await client.post(`/api/ai-assistant/generate/${jobData.course_id}/`, {
+        job_type: jobData.job_type,
+        instructions: jobData.instructions,
+        pdf_file: jobData.pdf_file,
+        model_config: jobData.model_config
+      });
+      return response.data;
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'Failed to create generation job';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const getJobStatus = async jobId => {
+    try {
+      const client = (0, _auth.getAuthenticatedHttpClient)();
+      const response = await client.get(`/api/ai-assistant/jobs/${jobId}/`);
+      return response.data;
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'Failed to get job status';
+      throw new Error(errorMessage);
+    }
+  };
+  const listJobs = async function () {
+    let courseId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+    try {
+      const client = (0, _auth.getAuthenticatedHttpClient)();
+      const url = courseId ? `/api/ai-assistant/jobs/?course_id=${courseId}` : '/api/ai-assistant/jobs/';
+      const response = await client.get(url);
+      return response.data;
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || 'Failed to list jobs';
+      throw new Error(errorMessage);
+    }
+  };
+
+  // Legacy method for backward compatibility
   const generateCourse = async (courseId, formData) => {
     setIsLoading(true);
     setError(null);
@@ -200,7 +336,12 @@ const useCourseGeneration = () => {
     }
   };
   return {
+    uploadFile,
+    createGenerationJob,
+    getJobStatus,
+    listJobs,
     generateCourse,
+    // Legacy support
     isLoading,
     error
   };

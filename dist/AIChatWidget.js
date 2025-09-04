@@ -27,12 +27,14 @@ function AIChatWidget(_ref) {
   } = chatAppData;
   const {
     sendMessage,
+    sendMessageStream,
     isLoading,
     error
   } = (0, _hooks.useAIChat)(apiUrl);
   const [open, setOpen] = (0, _react.useState)(false);
   const [busy, setBusy] = (0, _react.useState)(false);
   const [lines, setLines] = (0, _react.useState)([]);
+  const [streamingMessageId, setStreamingMessageId] = (0, _react.useState)(null);
   const inputRef = (0, _react.useRef)(null);
   const [inputValue, setInputValue] = (0, _react.useState)('');
   const messagesEndRef = (0, _react.useRef)(null);
@@ -49,11 +51,20 @@ function AIChatWidget(_ref) {
   }, [lines, busy]);
   function append(text) {
     let role = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'system';
+    let id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+    const messageId = id || String(Date.now() + Math.random());
     setLines(prev => [...prev, {
-      id: String(prev.length + 1),
+      id: messageId,
       role,
       text
     }]);
+    return messageId;
+  }
+  function updateMessage(id, text) {
+    setLines(prev => prev.map(line => line.id === id ? {
+      ...line,
+      text
+    } : line));
   }
   function formatResponse(res) {
     if (typeof res === 'string') {
@@ -89,16 +100,32 @@ function AIChatWidget(_ref) {
   async function handleSend() {
     const v = inputValue.trim();
     if (!v || !canSend) return;
-    append(`You: ${v}`, 'user');
+
+    // Add user message
+    append(v, 'user');
     setInputValue('');
     setBusy(true);
     try {
-      const res = await sendMessage(v);
-      const text = formatResponse(res);
-      append(text, 'assistant');
+      // Try streaming first, fallback to regular if not available
+      if (sendMessageStream) {
+        const assistantMessageId = append('', 'assistant');
+        setStreamingMessageId(assistantMessageId);
+        let streamedText = '';
+        await sendMessageStream(v, chunk => {
+          streamedText += chunk;
+          updateMessage(assistantMessageId, streamedText);
+        });
+        setStreamingMessageId(null);
+      } else {
+        // Fallback to regular message
+        const res = await sendMessage(v);
+        const text = formatResponse(res);
+        append(text, 'assistant');
+      }
     } catch (e) {
       const errorMessage = formatError(e);
       append(errorMessage, 'error');
+      setStreamingMessageId(null);
     } finally {
       setBusy(false);
     }
@@ -152,7 +179,9 @@ function AIChatWidget(_ref) {
   }, "\uD83D\uDC4B"), /*#__PURE__*/_react.default.createElement("p", null, "Hi! I'm here to help. Ask me anything!")), lines.map(line => /*#__PURE__*/_react.default.createElement("div", {
     key: line.id,
     className: `ai-chat-widget-line ai-chat-widget-line-${line.role}`
-  }, line.text)), busy && /*#__PURE__*/_react.default.createElement("div", {
+  }, line.text, streamingMessageId === line.id && /*#__PURE__*/_react.default.createElement("span", {
+    className: "streaming-cursor"
+  }, "\u258A"))), busy && !streamingMessageId && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "typing-indicator"

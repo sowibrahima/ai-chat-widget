@@ -18,10 +18,11 @@ export default function AIChatWidget({
     disabled = false,
   } = chatAppData;
 
-  const { sendMessage, isLoading, error } = useAIChat(apiUrl);
+  const { sendMessage, sendMessageStream, isLoading, error } = useAIChat(apiUrl);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState([]);
+  const [streamingMessageId, setStreamingMessageId] = useState(null);
   const inputRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
@@ -37,8 +38,16 @@ export default function AIChatWidget({
     scrollToBottom();
   }, [lines, busy]);
 
-  function append(text, role = 'system') {
-    setLines(prev => [...prev, { id: String(prev.length + 1), role, text }]);
+  function append(text, role = 'system', id = null) {
+    const messageId = id || String(Date.now() + Math.random());
+    setLines(prev => [...prev, { id: messageId, role, text }]);
+    return messageId;
+  }
+
+  function updateMessage(id, text) {
+    setLines(prev => prev.map(line => 
+      line.id === id ? { ...line, text } : line
+    ));
   }
 
   function formatResponse(res) {
@@ -80,16 +89,35 @@ export default function AIChatWidget({
   async function handleSend() {
     const v = inputValue.trim();
     if (!v || !canSend) return;
-    append(`You: ${v}`, 'user');
+    
+    // Add user message
+    append(v, 'user');
     setInputValue('');
     setBusy(true);
+    
     try {
-      const res = await sendMessage(v);
-      const text = formatResponse(res);
-      append(text, 'assistant');
+      // Try streaming first, fallback to regular if not available
+      if (sendMessageStream) {
+        const assistantMessageId = append('', 'assistant');
+        setStreamingMessageId(assistantMessageId);
+        let streamedText = '';
+        
+        await sendMessageStream(v, (chunk) => {
+          streamedText += chunk;
+          updateMessage(assistantMessageId, streamedText);
+        });
+        
+        setStreamingMessageId(null);
+      } else {
+        // Fallback to regular message
+        const res = await sendMessage(v);
+        const text = formatResponse(res);
+        append(text, 'assistant');
+      }
     } catch (e) {
       const errorMessage = formatError(e);
       append(errorMessage, 'error');
+      setStreamingMessageId(null);
     } finally {
       setBusy(false);
     }
@@ -153,9 +181,12 @@ export default function AIChatWidget({
           {lines.map(line => (
             <div key={line.id} className={`ai-chat-widget-line ai-chat-widget-line-${line.role}`}>
               {line.text}
+              {streamingMessageId === line.id && (
+                <span className="streaming-cursor">▊</span>
+              )}
             </div>
           ))}
-          {busy && (
+          {busy && !streamingMessageId && (
             <div className="ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing">
               <div className="typing-indicator">
                 <span></span>

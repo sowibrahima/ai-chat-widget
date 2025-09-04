@@ -558,153 +558,139 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  transition: all 0.2s ease;
+  border-radius: 4px;
 }
 
-.course-generation-modal-close:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
-}
-
-.course-generation-modal-close:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.course-generation-modal-close:hover {
+  background: #f5f5f5;
+  color: #333;
 }
 
 .course-generation-modal-body {
   padding: 24px;
-  max-height: 60vh;
-  overflow-y: auto;
 }
 
-.course-generation-modal-description {
-  color: #6b7280;
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
-
-.course-generation-modal-error {
-  background: #fef2f2;
-  color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #fecaca;
-  font-size: 14px;
-}
-
-.course-generation-form {
+.course-generation-modal-footer {
+  padding: 16px 24px 24px;
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .form-label {
-  font-weight: 600;
-  color: #374151;
-  font-size: 14px;
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.9rem;
 }
 
 .form-control {
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-  background: #ffffff;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #FFBA08;
-  box-shadow: 0 0 0 3px rgba(255, 186, 8, 0.1);
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .form-control:disabled {
-  background: #f3f4f6;
-  color: #9ca3af;
+  background-color: #f8f9fa;
+  color: #6c757d;
   cursor: not-allowed;
 }
 
-.form-control[type="file"] {
-  padding: 8px 12px;
-}
-
 .file-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   margin-top: 8px;
   padding: 8px 12px;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 6px;
-  font-size: 13px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #666;
 }
 
 .file-name {
-  color: #166534;
   font-weight: 500;
+  color: #333;
 }
 
 .file-size {
-  color: #16a34a;
+  margin-left: 8px;
+  color: #666;
 }
 
 .character-count {
-  font-size: 12px;
-  color: #9ca3af;
   text-align: right;
+  font-size: 0.8rem;
+  color: #666;
   margin-top: 4px;
 }
 
-.course-generation-modal-footer {
-  padding: 20px 24px;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+.progress-container {
+  margin-top: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progress-text {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
 }
 
 .btn {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
+  transition: all 0.2s;
 }
 
-.btn-secondary {
-  background: #ffffff;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #FFBA08 0%, #590D22 100%);
+  background: #007bff;
   color: white;
 }
 
@@ -735,6 +721,24 @@
 
 .icon {
   font-size: 16px;
+}
+
+/* Streaming cursor animation */
+.streaming-cursor {
+  display: inline-block;
+  animation: blink 1s infinite;
+  color: #FFBA08;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
 }
 
 /* Responsive modal */
