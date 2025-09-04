@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CourseGenerationModal from './CourseGenerationModal';
+import { getCourseIdFromUrl, useCourseGeneration } from './data/hooks';
 import './AIChatWidget.css';
 
 /**
@@ -12,15 +13,22 @@ export default function CourseGenerationButton({
   buttonText = "AI Generate",
   buttonIcon = "🪄",
   buttonClassName = "btn btn-primary",
-  apiUrl = "/api/ai-assistant/generation/jobs",
   uploadUrl = "/api/ai-assistant/upload",
   maxFileSizeMB = 50,
   onSuccess = () => {},
   onError = () => {},
 }) {
   const [showModal, setShowModal] = useState(false);
+  const { generateCourse, isLoading } = useCourseGeneration();
+  const courseId = getCourseIdFromUrl();
 
   const handleGenerate = async ({ file, instructions }) => {
+    if (!courseId) {
+      const error = new Error('No course context found. Please make sure you are on a course page.');
+      onError(error);
+      throw error;
+    }
+
     try {
       // First upload the PDF file
       const formData = new FormData();
@@ -42,29 +50,16 @@ export default function CourseGenerationButton({
 
       const uploadResult = await uploadResponse.json();
       
-      // Then create the generation job
-      const jobResponse = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
+      // Then create the generation job using the dynamic course-aware endpoint
+      const jobData = {
+        job_type: 'course_creation',
+        input_data: {
+          file_id: uploadResult.file_id,
+          instructions: instructions,
         },
-        credentials: 'same-origin',
-        body: JSON.stringify({
-          job_type: 'course_creation',
-          input_data: {
-            file_id: uploadResult.file_id,
-            instructions: instructions,
-          },
-        }),
-      });
-
-      if (!jobResponse.ok) {
-        const errorData = await jobResponse.json();
-        throw new Error(errorData.error || 'Failed to create generation job');
-      }
-
-      const jobResult = await jobResponse.json();
+      };
+      
+      const jobResult = await generateCourse(courseId, jobData);
       
       // Call success callback
       onSuccess({
@@ -98,7 +93,8 @@ export default function CourseGenerationButton({
       <button
         className={buttonClassName}
         onClick={() => setShowModal(true)}
-        title="Generate course content with AI"
+        disabled={!courseId || isLoading}
+        title={!courseId ? "Course context required" : "Generate course content with AI"}
         aria-label="Generate course content with AI"
       >
         <span className="icon" style={{ marginRight: '8px' }}>
