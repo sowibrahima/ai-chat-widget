@@ -12,7 +12,7 @@ var _auth = require("@edx/frontend-platform/auth");
 const useAIChatData = () => {
   const [chatAppData, setChatAppData] = (0, _react.useState)({
     showAIChat: true,
-    apiUrl: 'http://apps.local.openedx.io:8000/api/ai-assistant/chat',
+    apiUrl: '/api/ai-assistant/chat',
     title: 'AI Assistant',
     placeholder: 'Ask me anything...',
     disabled: false

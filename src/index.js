@@ -1,6 +1,8 @@
 import React, { StrictMode } from 'react';
 import { getAuthenticatedHttpClient } from '@edx/frontend-platform/auth';
 import AIChatWidget from './AIChatWidget';
+import CourseGenerationModal from './CourseGenerationModal';
+import CourseGenerationButton from './CourseGenerationButton';
 import { useAIChatData } from './data/hooks';
 
 export const AIChatTray = () => {
@@ -11,7 +13,7 @@ export const AIChatTray = () => {
 };
 
 export default AIChatTray;
-export { AIChatWidget, useAIChatData };
+export { AIChatWidget, CourseGenerationModal, CourseGenerationButton, useAIChatData };
 
 // Helper: mount widget into a DOM container
 export function mountAIWidget({
