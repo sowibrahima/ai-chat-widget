@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import classNames from 'classnames';
 import { useAIChat } from './data/hooks';
 import './AIChatWidget.css';
@@ -23,8 +23,19 @@ export default function AIChatWidget({
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState([]);
   const inputRef = useRef(null);
+  const [inputValue, setInputValue] = useState('');
+  const messagesEndRef = useRef(null);
 
   const canSend = useMemo(() => !disabled && !busy, [disabled, busy]);
+
+  // Auto-scroll to bottom when new messages are added
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [lines, busy]);
 
   function append(text, role = 'system') {
     setLines(prev => [...prev, { id: String(prev.length + 1), role, text }]);
@@ -67,10 +78,10 @@ export default function AIChatWidget({
   }
 
   async function handleSend() {
-    const v = (inputRef.current?.value || '').trim();
+    const v = inputValue.trim();
     if (!v || !canSend) return;
     append(`You: ${v}`, 'user');
-    inputRef.current.value = '';
+    setInputValue('');
     setBusy(true);
     try {
       const res = await sendMessage(v);
@@ -89,6 +100,14 @@ export default function AIChatWidget({
       e.preventDefault();
       handleSend();
     }
+  }
+
+  function handleInputChange(e) {
+    setInputValue(e.target.value);
+    // Auto-resize textarea
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
   }
 
   if (!open) {
@@ -146,6 +165,7 @@ export default function AIChatWidget({
               Thinking...
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
         
         <div className="ai-chat-widget-footer">
@@ -155,23 +175,27 @@ export default function AIChatWidget({
             </div>
           )}
           <div className="ai-chat-widget-input-container">
-            <textarea
-              ref={inputRef}
-              className="ai-chat-widget-input"
-              placeholder={placeholder}
-              disabled={!canSend}
-              onKeyDown={handleKeyDown}
-              rows={2}
-            />
-            <button
-              className={`ai-chat-widget-send ${!canSend ? 'disabled' : ''}`}
-              onClick={handleSend}
-              disabled={!canSend}
-              title="Send message"
-              aria-label="Send message"
-            >
-              {busy ? '⏳' : '➤'}
-            </button>
+            <div className="ai-chat-widget-input-wrapper">
+              <textarea
+                ref={inputRef}
+                className="ai-chat-widget-input"
+                placeholder={placeholder}
+                disabled={!canSend}
+                onKeyDown={handleKeyDown}
+                onChange={handleInputChange}
+                value={inputValue}
+                rows={1}
+              />
+              <button
+                className={`ai-chat-widget-send ${!canSend || !inputValue.trim() ? 'disabled' : ''}`}
+                onClick={handleSend}
+                disabled={!canSend || !inputValue.trim()}
+                title="Send message"
+                aria-label="Send message"
+              >
+                {busy ? '⏳' : '↑'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -34,7 +34,19 @@ function AIChatWidget(_ref) {
   const [busy, setBusy] = (0, _react.useState)(false);
   const [lines, setLines] = (0, _react.useState)([]);
   const inputRef = (0, _react.useRef)(null);
+  const [inputValue, setInputValue] = (0, _react.useState)('');
+  const messagesEndRef = (0, _react.useRef)(null);
   const canSend = (0, _react.useMemo)(() => !disabled && !busy, [disabled, busy]);
+
+  // Auto-scroll to bottom when new messages are added
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth'
+    });
+  };
+  (0, _react.useEffect)(() => {
+    scrollToBottom();
+  }, [lines, busy]);
   function append(text) {
     let role = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'system';
     setLines(prev => [...prev, {
@@ -75,10 +87,10 @@ function AIChatWidget(_ref) {
     return 'Something went wrong. Please try again.';
   }
   async function handleSend() {
-    const v = (inputRef.current?.value || '').trim();
+    const v = inputValue.trim();
     if (!v || !canSend) return;
     append(`You: ${v}`, 'user');
-    inputRef.current.value = '';
+    setInputValue('');
     setBusy(true);
     try {
       const res = await sendMessage(v);
@@ -96,6 +108,13 @@ function AIChatWidget(_ref) {
       e.preventDefault();
       handleSend();
     }
+  }
+  function handleInputChange(e) {
+    setInputValue(e.target.value);
+    // Auto-resize textarea
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
   }
   if (!open) {
     return /*#__PURE__*/_react.default.createElement("div", {
@@ -137,25 +156,31 @@ function AIChatWidget(_ref) {
     className: "ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "typing-indicator"
-  }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking...")), /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking..."), /*#__PURE__*/_react.default.createElement("div", {
+    ref: messagesEndRef
+  })), /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-footer"
   }, error && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-error"
   }, error), /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-input-container"
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-input-wrapper"
   }, /*#__PURE__*/_react.default.createElement("textarea", {
     ref: inputRef,
     className: "ai-chat-widget-input",
     placeholder: placeholder,
     disabled: !canSend,
     onKeyDown: handleKeyDown,
-    rows: 2
+    onChange: handleInputChange,
+    value: inputValue,
+    rows: 1
   }), /*#__PURE__*/_react.default.createElement("button", {
-    className: `ai-chat-widget-send ${!canSend ? 'disabled' : ''}`,
+    className: `ai-chat-widget-send ${!canSend || !inputValue.trim() ? 'disabled' : ''}`,
     onClick: handleSend,
-    disabled: !canSend,
+    disabled: !canSend || !inputValue.trim(),
     title: "Send message",
     "aria-label": "Send message"
-  }, busy ? '⏳' : '➤')))));
+  }, busy ? '⏳' : '↑'))))));
 }
 //# sourceMappingURL=AIChatWidget.js.map
