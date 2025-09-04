@@ -30,6 +30,42 @@ export default function AIChatWidget({
     setLines(prev => [...prev, { id: String(prev.length + 1), role, text }]);
   }
 
+  function formatResponse(res) {
+    if (typeof res === 'string') {
+      return res;
+    }
+    
+    // Handle structured response with message field
+    if (res?.message) {
+      return res.message;
+    }
+    
+    // Handle error responses with metadata
+    if (res?.metadata?.error) {
+      return res.metadata.error;
+    }
+    
+    // Fallback to text field or stringify
+    return res?.text || JSON.stringify(res);
+  }
+
+  function formatError(error) {
+    // Try to extract meaningful error message
+    if (typeof error === 'string') {
+      return error;
+    }
+    
+    if (error?.message) {
+      return error.message;
+    }
+    
+    if (error?.detail) {
+      return error.detail;
+    }
+    
+    return 'Something went wrong. Please try again.';
+  }
+
   async function handleSend() {
     const v = (inputRef.current?.value || '').trim();
     if (!v || !canSend) return;
@@ -38,10 +74,11 @@ export default function AIChatWidget({
     setBusy(true);
     try {
       const res = await sendMessage(v);
-      const text = typeof res === 'string' ? res : (res?.text ?? JSON.stringify(res));
+      const text = formatResponse(res);
       append(text, 'assistant');
     } catch (e) {
-      append(`Error: ${e?.message || String(e)}`, 'error');
+      const errorMessage = formatError(e);
+      append(errorMessage, 'error');
     } finally {
       setBusy(false);
     }
