@@ -183,8 +183,14 @@ const useAIChat = function (apiUrl) {
       // Use streaming endpoint - handle both URL formats
       let streamUrl;
       if (apiUrl.includes('/chat/') && !apiUrl.includes('/stream')) {
-        // Format: /chat/course-id/ -> /chat/course-id/stream/
-        streamUrl = apiUrl.replace(/\/chat\/([^/]+)\/$/, '/chat/$1/stream/');
+        // Handle both course-only and course+block URLs
+        if (apiUrl.match(/\/chat\/[^/]+\/[^/]+\/$/)) {
+          // Format: /chat/course-id/block-id/ -> /chat/course-id/block-id/stream/
+          streamUrl = apiUrl.replace(/\/chat\/([^/]+\/[^/]+)\/$/, '/chat/$1/stream/');
+        } else {
+          // Format: /chat/course-id/ -> /chat/course-id/stream/
+          streamUrl = apiUrl.replace(/\/chat\/([^/]+)\/$/, '/chat/$1/stream/');
+        }
       } else {
         // Fallback for legacy format
         streamUrl = apiUrl.replace('/chat', '/chat/stream');
