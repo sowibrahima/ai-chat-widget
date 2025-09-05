@@ -36,7 +36,8 @@
     "url": "https://github.com/sowibrahima/ai-chat-widget/issues"
   },
   "dependencies": {
-    "classnames": "2.5.1"
+    "classnames": "2.5.1",
+    "react-markdown": "^9.0.1"
   },
   "devDependencies": {
     "@edx/browserslist-config": "^1.1.1",

@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import classNames from 'classnames';
+import ReactMarkdown from 'react-markdown';
 import { useAIChat } from './data/hooks';
 import './AIChatWidget.css';
 
@@ -30,20 +31,26 @@ export default function AIChatWidget({
 
   const canSend = useMemo(() => !disabled && !busy, [disabled, busy]);
 
-  // Format text with basic markdown support
-  function formatText(text) {
-    if (!text) return '';
-    
-    return text
-      // Bold text: **text** -> <strong>text</strong>
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italic text: *text* -> <em>text</em>
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Line breaks
-      .replace(/\n/g, '<br>')
-      // Code blocks: `code` -> <code>code</code>
-      .replace(/`(.*?)`/g, '<code>$1</code>');
-  }
+  // Custom components for ReactMarkdown
+  const markdownComponents = {
+    // Ensure headings have proper styling
+    h1: ({ children }) => <h1 className="markdown-h1">{children}</h1>,
+    h2: ({ children }) => <h2 className="markdown-h2">{children}</h2>,
+    h3: ({ children }) => <h3 className="markdown-h3">{children}</h3>,
+    h4: ({ children }) => <h4 className="markdown-h4">{children}</h4>,
+    h5: ({ children }) => <h5 className="markdown-h5">{children}</h5>,
+    h6: ({ children }) => <h6 className="markdown-h6">{children}</h6>,
+    // Style code blocks
+    code: ({ children, className }) => (
+      <code className={`markdown-code ${className || ''}`}>{children}</code>
+    ),
+    // Style lists
+    ul: ({ children }) => <ul className="markdown-ul">{children}</ul>,
+    ol: ({ children }) => <ol className="markdown-ol">{children}</ol>,
+    li: ({ children }) => <li className="markdown-li">{children}</li>,
+    // Style paragraphs
+    p: ({ children }) => <p className="markdown-p">{children}</p>,
+  };
 
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = () => {
@@ -198,7 +205,11 @@ export default function AIChatWidget({
           )}
           {lines.map(line => (
             <div key={line.id} className={`ai-chat-widget-line ai-chat-widget-line-${line.role}`}>
-              <div dangerouslySetInnerHTML={{ __html: formatText(line.text) }} />
+              <div className="message-content">
+                <ReactMarkdown components={markdownComponents}>
+                  {line.text || ''}
+                </ReactMarkdown>
+              </div>
               {streamingMessageId === line.id && (
                 <span className="streaming-cursor">▊</span>
               )}
