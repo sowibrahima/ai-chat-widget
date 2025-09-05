@@ -179,8 +179,19 @@ export const useAIChat = (apiUrl, sessionId = null) => {
         payload.session_id = currentSessionId;
       }
       
-      // Use streaming endpoint
-      const streamUrl = apiUrl.replace('/chat', '/chat/stream');
+      // Use streaming endpoint - handle both URL formats
+      let streamUrl;
+      if (apiUrl.includes('/chat/') && !apiUrl.includes('/stream')) {
+        // Format: /chat/course-id/ -> /chat/course-id/stream/
+        streamUrl = apiUrl.replace(/\/chat\/([^/]+)\/$/, '/chat/$1/stream/');
+      } else {
+        // Fallback for legacy format
+        streamUrl = apiUrl.replace('/chat', '/chat/stream');
+      }
+      
+      // Debug the URL being called
+      console.log('Streaming URL:', streamUrl);
+      console.log('Payload:', payload);
       
       const response = await fetch(streamUrl, {
         method: 'POST',
@@ -192,6 +203,9 @@ export const useAIChat = (apiUrl, sessionId = null) => {
         credentials: 'include',
         body: JSON.stringify(payload),
       });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', [...response.headers.entries()]);
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -221,11 +235,26 @@ export const useAIChat = (apiUrl, sessionId = null) => {
             
             try {
               const chunk = JSON.parse(data);
-              const content = chunk.choices?.[0]?.delta?.content;
               
+              // Handle OpenAI-style streaming format
+              const content = chunk.choices?.[0]?.delta?.content;
               if (content) {
                 fullResponse += content;
                 onChunk(content);
+                continue;
+              }
+              
+              // Handle simple message format
+              if (chunk.message) {
+                fullResponse += chunk.message;
+                onChunk(chunk.message);
+                continue;
+              }
+              
+              // Handle direct text content
+              if (typeof chunk === 'string') {
+                fullResponse += chunk;
+                onChunk(chunk);
               }
             } catch (e) {
               // Skip invalid JSON chunks

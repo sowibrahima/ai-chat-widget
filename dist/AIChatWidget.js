@@ -35,6 +35,7 @@ function AIChatWidget(_ref) {
   const [busy, setBusy] = (0, _react.useState)(false);
   const [lines, setLines] = (0, _react.useState)([]);
   const [streamingMessageId, setStreamingMessageId] = (0, _react.useState)(null);
+  const [hasFirstAIResponse, setHasFirstAIResponse] = (0, _react.useState)(false);
   const inputRef = (0, _react.useRef)(null);
   const [inputValue, setInputValue] = (0, _react.useState)('');
   const messagesEndRef = (0, _react.useRef)(null);
@@ -116,11 +117,13 @@ function AIChatWidget(_ref) {
           updateMessage(assistantMessageId, streamedText);
         });
         setStreamingMessageId(null);
+        setHasFirstAIResponse(true);
       } else {
         // Fallback to regular message
         const res = await sendMessage(v);
         const text = formatResponse(res);
         append(text, 'assistant');
+        setHasFirstAIResponse(true);
       }
     } catch (e) {
       const errorMessage = formatError(e);
@@ -185,7 +188,9 @@ function AIChatWidget(_ref) {
     className: "ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "typing-indicator"
-  }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking..."), /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking..."), hasFirstAIResponse && /*#__PURE__*/_react.default.createElement("div", {
+    className: "ai-chat-widget-disclaimer"
+  }, /*#__PURE__*/_react.default.createElement("p", null, "\u26A0\uFE0F AI can make mistakes. Please verify important information and check our terms of service.")), /*#__PURE__*/_react.default.createElement("div", {
     ref: messagesEndRef
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-footer"

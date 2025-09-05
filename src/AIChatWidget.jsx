@@ -23,6 +23,7 @@ export default function AIChatWidget({
   const [busy, setBusy] = useState(false);
   const [lines, setLines] = useState([]);
   const [streamingMessageId, setStreamingMessageId] = useState(null);
+  const [hasFirstAIResponse, setHasFirstAIResponse] = useState(false);
   const inputRef = useRef(null);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef(null);
@@ -108,11 +109,13 @@ export default function AIChatWidget({
         });
         
         setStreamingMessageId(null);
+        setHasFirstAIResponse(true);
       } else {
         // Fallback to regular message
         const res = await sendMessage(v);
         const text = formatResponse(res);
         append(text, 'assistant');
+        setHasFirstAIResponse(true);
       }
     } catch (e) {
       const errorMessage = formatError(e);
@@ -194,6 +197,13 @@ export default function AIChatWidget({
                 <span></span>
               </div>
               Thinking...
+            </div>
+          )}
+          {hasFirstAIResponse && (
+            <div className="ai-chat-widget-disclaimer">
+              <p>
+                ⚠️ AI can make mistakes. Please verify important information and check our terms of service.
+              </p>
             </div>
           )}
           <div ref={messagesEndRef} />
