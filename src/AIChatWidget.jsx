@@ -30,6 +30,21 @@ export default function AIChatWidget({
 
   const canSend = useMemo(() => !disabled && !busy, [disabled, busy]);
 
+  // Format text with basic markdown support
+  function formatText(text) {
+    if (!text) return '';
+    
+    return text
+      // Bold text: **text** -> <strong>text</strong>
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic text: *text* -> <em>text</em>
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Line breaks
+      .replace(/\n/g, '<br>')
+      // Code blocks: `code` -> <code>code</code>
+      .replace(/`(.*?)`/g, '<code>$1</code>');
+  }
+
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -183,7 +198,7 @@ export default function AIChatWidget({
           )}
           {lines.map(line => (
             <div key={line.id} className={`ai-chat-widget-line ai-chat-widget-line-${line.role}`}>
-              {line.text}
+              <div dangerouslySetInnerHTML={{ __html: formatText(line.text) }} />
               {streamingMessageId === line.id && (
                 <span className="streaming-cursor">▊</span>
               )}
@@ -202,7 +217,7 @@ export default function AIChatWidget({
           {hasFirstAIResponse && (
             <div className="ai-chat-widget-disclaimer">
               <p>
-                ⚠️ AI can make mistakes. Please verify important information and check our terms of service.
+                AI can make mistakes. Please verify important information.
               </p>
             </div>
           )}

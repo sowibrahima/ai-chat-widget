@@ -41,6 +41,20 @@ function AIChatWidget(_ref) {
   const messagesEndRef = (0, _react.useRef)(null);
   const canSend = (0, _react.useMemo)(() => !disabled && !busy, [disabled, busy]);
 
+  // Format text with basic markdown support
+  function formatText(text) {
+    if (!text) return '';
+    return text
+    // Bold text: **text** -> <strong>text</strong>
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic text: *text* -> <em>text</em>
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Line breaks
+    .replace(/\n/g, '<br>')
+    // Code blocks: `code` -> <code>code</code>
+    .replace(/`(.*?)`/g, '<code>$1</code>');
+  }
+
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
@@ -182,7 +196,11 @@ function AIChatWidget(_ref) {
   }, "\uD83D\uDC4B"), /*#__PURE__*/_react.default.createElement("p", null, "Hi! I'm here to help. Ask me anything!")), lines.map(line => /*#__PURE__*/_react.default.createElement("div", {
     key: line.id,
     className: `ai-chat-widget-line ai-chat-widget-line-${line.role}`
-  }, line.text, streamingMessageId === line.id && /*#__PURE__*/_react.default.createElement("span", {
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    dangerouslySetInnerHTML: {
+      __html: formatText(line.text)
+    }
+  }), streamingMessageId === line.id && /*#__PURE__*/_react.default.createElement("span", {
     className: "streaming-cursor"
   }, "\u258A"))), busy && !streamingMessageId && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing"
@@ -190,7 +208,7 @@ function AIChatWidget(_ref) {
     className: "typing-indicator"
   }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking..."), hasFirstAIResponse && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-disclaimer"
-  }, /*#__PURE__*/_react.default.createElement("p", null, "\u26A0\uFE0F AI can make mistakes. Please verify important information and check our terms of service.")), /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("p", null, "AI can make mistakes. Please verify important information.")), /*#__PURE__*/_react.default.createElement("div", {
     ref: messagesEndRef
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-footer"
