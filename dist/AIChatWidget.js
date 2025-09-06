@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = AIChatWidget;
 var _react = _interopRequireWildcard(require("react"));
 var _classnames = _interopRequireDefault(require("classnames"));
+var _reactMarkdown = _interopRequireDefault(require("react-markdown"));
 var _hooks = require("./data/hooks");
 require("./AIChatWidget.css");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
@@ -41,19 +42,102 @@ function AIChatWidget(_ref) {
   const messagesEndRef = (0, _react.useRef)(null);
   const canSend = (0, _react.useMemo)(() => !disabled && !busy, [disabled, busy]);
 
-  // Format text with basic markdown support
-  function formatText(text) {
-    if (!text) return '';
-    return text
-    // Bold text: **text** -> <strong>text</strong>
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Italic text: *text* -> <em>text</em>
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Line breaks
-    .replace(/\n/g, '<br>')
-    // Code blocks: `code` -> <code>code</code>
-    .replace(/`(.*?)`/g, '<code>$1</code>');
-  }
+  // Custom components for ReactMarkdown
+  const markdownComponents = {
+    // Ensure headings have proper styling
+    h1: _ref2 => {
+      let {
+        children
+      } = _ref2;
+      return /*#__PURE__*/_react.default.createElement("h1", {
+        className: "markdown-h1"
+      }, children);
+    },
+    h2: _ref3 => {
+      let {
+        children
+      } = _ref3;
+      return /*#__PURE__*/_react.default.createElement("h2", {
+        className: "markdown-h2"
+      }, children);
+    },
+    h3: _ref4 => {
+      let {
+        children
+      } = _ref4;
+      return /*#__PURE__*/_react.default.createElement("h3", {
+        className: "markdown-h3"
+      }, children);
+    },
+    h4: _ref5 => {
+      let {
+        children
+      } = _ref5;
+      return /*#__PURE__*/_react.default.createElement("h4", {
+        className: "markdown-h4"
+      }, children);
+    },
+    h5: _ref6 => {
+      let {
+        children
+      } = _ref6;
+      return /*#__PURE__*/_react.default.createElement("h5", {
+        className: "markdown-h5"
+      }, children);
+    },
+    h6: _ref7 => {
+      let {
+        children
+      } = _ref7;
+      return /*#__PURE__*/_react.default.createElement("h6", {
+        className: "markdown-h6"
+      }, children);
+    },
+    // Style code blocks
+    code: _ref8 => {
+      let {
+        children,
+        className
+      } = _ref8;
+      return /*#__PURE__*/_react.default.createElement("code", {
+        className: `markdown-code ${className || ''}`
+      }, children);
+    },
+    // Style lists
+    ul: _ref9 => {
+      let {
+        children
+      } = _ref9;
+      return /*#__PURE__*/_react.default.createElement("ul", {
+        className: "markdown-ul"
+      }, children);
+    },
+    ol: _ref0 => {
+      let {
+        children
+      } = _ref0;
+      return /*#__PURE__*/_react.default.createElement("ol", {
+        className: "markdown-ol"
+      }, children);
+    },
+    li: _ref1 => {
+      let {
+        children
+      } = _ref1;
+      return /*#__PURE__*/_react.default.createElement("li", {
+        className: "markdown-li"
+      }, children);
+    },
+    // Style paragraphs
+    p: _ref10 => {
+      let {
+        children
+      } = _ref10;
+      return /*#__PURE__*/_react.default.createElement("p", {
+        className: "markdown-p"
+      }, children);
+    }
+  };
 
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = () => {
@@ -197,10 +281,10 @@ function AIChatWidget(_ref) {
     key: line.id,
     className: `ai-chat-widget-line ai-chat-widget-line-${line.role}`
   }, /*#__PURE__*/_react.default.createElement("div", {
-    dangerouslySetInnerHTML: {
-      __html: formatText(line.text)
-    }
-  }), streamingMessageId === line.id && /*#__PURE__*/_react.default.createElement("span", {
+    className: "message-content"
+  }, /*#__PURE__*/_react.default.createElement(_reactMarkdown.default, {
+    components: markdownComponents
+  }, line.text || '')), streamingMessageId === line.id && /*#__PURE__*/_react.default.createElement("span", {
     className: "streaming-cursor"
   }, "\u258A"))), busy && !streamingMessageId && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing"
