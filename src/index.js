@@ -255,8 +255,8 @@ function showSimpleCourseGenerationModal(courseId, onSuccess, onError, onClose) 
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="window.WSAIAssistant.closeCourseGenerationModal()">Cancel</button>
-            <button type="button" class="btn btn-primary" id="ws-ai-submit">
+            <button type="button" class="btn-ai-chat btn-ai-chat-secondary" onclick="window.WSAIAssistant.closeCourseGenerationModal()">Cancel</button>
+            <button type="button" class="btn-ai-chat btn-ai-chat-primary" id="ws-ai-submit">
               <span class="fa fa-magic" style="margin-right: 6px;"></span>
               Generate Course
             </button>
