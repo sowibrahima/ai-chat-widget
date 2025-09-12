@@ -395,7 +395,7 @@ function AIChatWidget(_ref5) {
     className: "welcome-icon"
   }, /*#__PURE__*/_react.default.createElement(IconBot, {
     size: 40
-  })), /*#__PURE__*/_react.default.createElement("p", null, "Hi! I'm here to help. Ask me anything!")), lines.map(line => /*#__PURE__*/_react.default.createElement("div", {
+  })), /*#__PURE__*/_react.default.createElement("p", null, "Je suis ici pour vous aider. Posez-moi n'importe quelle question !")), lines.map(line => /*#__PURE__*/_react.default.createElement("div", {
     key: line.id,
     className: `ai-chat-widget-line ai-chat-widget-line-${line.role}`
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -410,7 +410,7 @@ function AIChatWidget(_ref5) {
     className: "typing-indicator"
   }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking..."), hasFirstAIResponse && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-disclaimer"
-  }, /*#__PURE__*/_react.default.createElement("p", null, "L'AI peut faire des erreurs. Veuillez v\xE9rifier les informations importantes.")), /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("p", null, "L'IA peut faire des erreurs. Veuillez v\xE9rifier les informations importantes.")), /*#__PURE__*/_react.default.createElement("div", {
     ref: messagesEndRef
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-footer"

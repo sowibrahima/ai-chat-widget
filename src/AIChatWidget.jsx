@@ -228,7 +228,7 @@ export default function AIChatWidget({
           {lines.length === 0 && (
             <div className="ai-chat-widget-welcome">
               <div className="welcome-icon"><IconBot size={40} /></div>
-              <p>Hi! I'm here to help. Ask me anything!</p>
+              <p>Je suis ici pour vous aider. Posez-moi n'importe quelle question !</p>
             </div>
           )}
           {lines.map(line => (
@@ -256,7 +256,7 @@ export default function AIChatWidget({
           {hasFirstAIResponse && (
             <div className="ai-chat-widget-disclaimer">
               <p>
-                L'AI peut faire des erreurs. Veuillez vérifier les informations importantes.
+                L'IA peut faire des erreurs. Veuillez vérifier les informations importantes.
               </p>
             </div>
           )}
