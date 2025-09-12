@@ -459,42 +459,6 @@
   }
 }
 
-/* Force light theme - disable dark mode */
-.ai-chat-widget {
-  background: var(--panel) !important;
-  border-color: var(--border) !important;
-}
-
-.ai-chat-widget-body {
-  background: #ffffff !important;
-}
-
-.ai-chat-widget-footer {
-  background: #ffffff !important;
-  border-top-color: var(--border) !important;
-}
-
-.ai-chat-widget-line-assistant {
-  background: var(--bg-soft) !important;
-  color: var(--text) !important;
-  border-color: var(--border) !important;
-}
-
-.ai-chat-widget-input {
-  background: #ffffff !important;
-  border-color: var(--border) !important;
-  color: var(--text) !important;
-}
-
-.ai-chat-widget-input:focus {
-  background: #ffffff !important;
-  border-color: var(--brand) !important;
-}
-
-.ai-chat-widget-welcome {
-  color: #6b7280 !important;
-}
-
 /* Course Generation Modal Styles */
 .course-generation-modal-overlay {
   position: fixed;
