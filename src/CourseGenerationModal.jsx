@@ -2,6 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { useCourseGeneration } from './data/hooks';
 import './AIChatWidget.css';
 
+// Minimal SVG icons
+const IconClose = ({ size = 18, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+const IconSpinner = ({ size = 16, ...props }) => (
+  <svg className="spinner" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ marginRight: 8 }} {...props}>
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.2" />
+    <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" fill="none" />
+  </svg>
+);
+const IconFile = ({ size = 16, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 6, verticalAlign: 'text-bottom' }} {...props}>
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+  </svg>
+);
+const IconWand = ({ size = 16, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 8 }} {...props}>
+    <path d="M15 4l-1 3 3-1" />
+    <path d="M6 20l8-8" />
+    <path d="M4 15l3 1-1 3" />
+    <path d="M18 10l2 2" />
+  </svg>
+);
+
 /**
  * CourseGenerationModal
  * - Modal component for AI course generation from PDF
@@ -154,7 +182,7 @@ export default function CourseGenerationModal({
             disabled={isGenerating}
             aria-label="Close modal"
           >
-            ✕
+            <IconClose />
           </button>
         </div>
 
@@ -184,7 +212,7 @@ export default function CourseGenerationModal({
               />
               {file && (
                 <div className="file-info">
-                  <span className="file-name">📄 {file.name}</span>
+                  <span className="file-name"><IconFile />{file.name}</span>
                   <span className="file-size">({(file.size / (1024 * 1024)).toFixed(1)}MB)</span>
                 </div>
               )}
@@ -264,13 +292,11 @@ export default function CourseGenerationModal({
           >
             {isGenerating ? (
               <>
-                <span className="spinner">⏳</span>
-                Generating...
+                <IconSpinner />Generating...
               </>
             ) : (
               <>
-                <span className="icon">🪄</span>
-                Generate Course
+                <IconWand />Generate Course
               </>
             )}
           </button>

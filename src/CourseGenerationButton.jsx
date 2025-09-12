@@ -3,6 +3,16 @@ import CourseGenerationModal from './CourseGenerationModal';
 import { getCourseIdFromUrl } from './data/hooks';
 import './AIChatWidget.css';
 
+// Minimal SVG wand icon
+const IconWand = ({ size = 16, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 8, verticalAlign: 'text-bottom' }} {...props}>
+    <path d="M15 4l-1 3 3-1" />
+    <path d="M6 20l8-8" />
+    <path d="M4 15l3 1-1 3" />
+    <path d="M18 10l2 2" />
+  </svg>
+);
+
 /**
  * CourseGenerationButton
  * - Simple button component that opens the course generation modal
@@ -11,7 +21,7 @@ import './AIChatWidget.css';
  */
 export default function CourseGenerationButton({
   buttonText = "AI Generate",
-  buttonIcon = "🪄",
+  buttonIcon = null,
   buttonClassName = "btn btn-primary",
   maxFileSizeMB = 50,
   onSuccess = () => {},
@@ -47,7 +57,7 @@ export default function CourseGenerationButton({
         aria-label="Generate course content with AI"
       >
         <span className="icon" style={{ marginRight: '8px' }}>
-          {buttonIcon}
+          {React.isValidElement(buttonIcon) ? buttonIcon : <IconWand />}
         </span>
         {buttonText}
       </button>

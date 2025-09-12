@@ -4,6 +4,34 @@ import ReactMarkdown from 'react-markdown';
 import { useAIChat } from './data/hooks';
 import './AIChatWidget.css';
 
+// Icon components (minimal SVGs)
+const IconBot = ({ size = 20, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+    <rect x="5" y="8" width="14" height="10" rx="4"></rect>
+    <path d="M12 4v4"></path>
+    <circle cx="8.5" cy="12.5" r="1"></circle>
+    <circle cx="15.5" cy="12.5" r="1"></circle>
+  </svg>
+);
+const IconClose = ({ size = 18, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+const IconSend = ({ size = 16, ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+    <path d="M22 2L11 13"></path>
+    <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+  </svg>
+);
+const IconSpinner = ({ size = 16, ...props }) => (
+  <svg className="spinner" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" {...props}>
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.2" />
+    <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" fill="none" />
+  </svg>
+);
+
 /**
  * AIChatWidget
  * - Clean and modern AI chat component
@@ -172,7 +200,7 @@ export default function AIChatWidget({
           title={title}
           aria-label={`Open ${title}`}
         >
-          🤖
+          <IconBot size={22} />
         </button>
       </div>
     );
@@ -183,7 +211,7 @@ export default function AIChatWidget({
       <div className="ai-chat-widget">
         <div className="ai-chat-widget-header">
           <div className="ai-chat-widget-title-section">
-            <div className="ai-chat-widget-icon">🤖</div>
+            <div className="ai-chat-widget-icon"><IconBot size={18} /></div>
             <h3 className="ai-chat-widget-title">{title}</h3>
           </div>
           <button
@@ -192,14 +220,14 @@ export default function AIChatWidget({
             title="Close"
             aria-label="Close chat"
           >
-            ✕
+            <IconClose size={18} />
           </button>
         </div>
         
         <div className="ai-chat-widget-body">
           {lines.length === 0 && (
             <div className="ai-chat-widget-welcome">
-              <div className="welcome-icon">👋</div>
+              <div className="welcome-icon"><IconBot size={40} /></div>
               <p>Hi! I'm here to help. Ask me anything!</p>
             </div>
           )}
@@ -228,7 +256,7 @@ export default function AIChatWidget({
           {hasFirstAIResponse && (
             <div className="ai-chat-widget-disclaimer">
               <p>
-                AI can make mistakes. Please verify important information.
+                L'AI peut faire des erreurs. Veuillez vérifier les informations importantes.
               </p>
             </div>
           )}
@@ -260,7 +288,7 @@ export default function AIChatWidget({
                 title="Send message"
                 aria-label="Send message"
               >
-                {busy ? '⏳' : '↑'}
+                {busy ? <IconSpinner /> : <IconSend />}
               </button>
             </div>
           </div>

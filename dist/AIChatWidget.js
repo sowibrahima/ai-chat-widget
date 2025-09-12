@@ -11,15 +11,125 @@ var _hooks = require("./data/hooks");
 require("./AIChatWidget.css");
 function _interopRequireDefault(e) { return e && e.__esModule ? e : { default: e }; }
 function _interopRequireWildcard(e, t) { if ("function" == typeof WeakMap) var r = new WeakMap(), n = new WeakMap(); return (_interopRequireWildcard = function (e, t) { if (!t && e && e.__esModule) return e; var o, i, f = { __proto__: null, default: e }; if (null === e || "object" != typeof e && "function" != typeof e) return f; if (o = t ? n : r) { if (o.has(e)) return o.get(e); o.set(e, f); } for (const t in e) "default" !== t && {}.hasOwnProperty.call(e, t) && ((i = (o = Object.defineProperty) && Object.getOwnPropertyDescriptor(e, t)) && (i.get || i.set) ? o(f, t, i) : f[t] = e[t]); return f; })(e, t); }
+function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// Icon components (minimal SVGs)
+const IconBot = _ref => {
+  let {
+    size = 20,
+    ...props
+  } = _ref;
+  return /*#__PURE__*/_react.default.createElement("svg", _extends({
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true"
+  }, props), /*#__PURE__*/_react.default.createElement("rect", {
+    x: "5",
+    y: "8",
+    width: "14",
+    height: "10",
+    rx: "4"
+  }), /*#__PURE__*/_react.default.createElement("path", {
+    d: "M12 4v4"
+  }), /*#__PURE__*/_react.default.createElement("circle", {
+    cx: "8.5",
+    cy: "12.5",
+    r: "1"
+  }), /*#__PURE__*/_react.default.createElement("circle", {
+    cx: "15.5",
+    cy: "12.5",
+    r: "1"
+  }));
+};
+const IconClose = _ref2 => {
+  let {
+    size = 18,
+    ...props
+  } = _ref2;
+  return /*#__PURE__*/_react.default.createElement("svg", _extends({
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true"
+  }, props), /*#__PURE__*/_react.default.createElement("line", {
+    x1: "18",
+    y1: "6",
+    x2: "6",
+    y2: "18"
+  }), /*#__PURE__*/_react.default.createElement("line", {
+    x1: "6",
+    y1: "6",
+    x2: "18",
+    y2: "18"
+  }));
+};
+const IconSend = _ref3 => {
+  let {
+    size = 16,
+    ...props
+  } = _ref3;
+  return /*#__PURE__*/_react.default.createElement("svg", _extends({
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.6",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true"
+  }, props), /*#__PURE__*/_react.default.createElement("path", {
+    d: "M22 2L11 13"
+  }), /*#__PURE__*/_react.default.createElement("path", {
+    d: "M22 2L15 22L11 13L2 9L22 2Z"
+  }));
+};
+const IconSpinner = _ref4 => {
+  let {
+    size = 16,
+    ...props
+  } = _ref4;
+  return /*#__PURE__*/_react.default.createElement("svg", _extends({
+    className: "spinner",
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true"
+  }, props), /*#__PURE__*/_react.default.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "10",
+    stroke: "currentColor",
+    strokeWidth: "3",
+    fill: "none",
+    opacity: "0.2"
+  }), /*#__PURE__*/_react.default.createElement("path", {
+    d: "M22 12a10 10 0 0 1-10 10",
+    stroke: "currentColor",
+    strokeWidth: "3",
+    fill: "none"
+  }));
+};
+
 /**
  * AIChatWidget
  * - Clean and modern AI chat component
  * - Simple but professional design
  */
-function AIChatWidget(_ref) {
+function AIChatWidget(_ref5) {
   let {
     chatAppData = {}
-  } = _ref;
+  } = _ref5;
   const {
     title = 'AI Assistant',
     placeholder = 'Ask me anything…',
@@ -45,94 +155,94 @@ function AIChatWidget(_ref) {
   // Custom components for ReactMarkdown
   const markdownComponents = {
     // Ensure headings have proper styling
-    h1: _ref2 => {
+    h1: _ref6 => {
       let {
         children
-      } = _ref2;
+      } = _ref6;
       return /*#__PURE__*/_react.default.createElement("h1", {
         className: "markdown-h1"
       }, children);
     },
-    h2: _ref3 => {
+    h2: _ref7 => {
       let {
         children
-      } = _ref3;
+      } = _ref7;
       return /*#__PURE__*/_react.default.createElement("h2", {
         className: "markdown-h2"
       }, children);
     },
-    h3: _ref4 => {
+    h3: _ref8 => {
       let {
         children
-      } = _ref4;
+      } = _ref8;
       return /*#__PURE__*/_react.default.createElement("h3", {
         className: "markdown-h3"
       }, children);
     },
-    h4: _ref5 => {
+    h4: _ref9 => {
       let {
         children
-      } = _ref5;
+      } = _ref9;
       return /*#__PURE__*/_react.default.createElement("h4", {
         className: "markdown-h4"
       }, children);
     },
-    h5: _ref6 => {
+    h5: _ref0 => {
       let {
         children
-      } = _ref6;
+      } = _ref0;
       return /*#__PURE__*/_react.default.createElement("h5", {
         className: "markdown-h5"
       }, children);
     },
-    h6: _ref7 => {
+    h6: _ref1 => {
       let {
         children
-      } = _ref7;
+      } = _ref1;
       return /*#__PURE__*/_react.default.createElement("h6", {
         className: "markdown-h6"
       }, children);
     },
     // Style code blocks
-    code: _ref8 => {
+    code: _ref10 => {
       let {
         children,
         className
-      } = _ref8;
+      } = _ref10;
       return /*#__PURE__*/_react.default.createElement("code", {
         className: `markdown-code ${className || ''}`
       }, children);
     },
     // Style lists
-    ul: _ref9 => {
+    ul: _ref11 => {
       let {
         children
-      } = _ref9;
+      } = _ref11;
       return /*#__PURE__*/_react.default.createElement("ul", {
         className: "markdown-ul"
       }, children);
     },
-    ol: _ref0 => {
+    ol: _ref12 => {
       let {
         children
-      } = _ref0;
+      } = _ref12;
       return /*#__PURE__*/_react.default.createElement("ol", {
         className: "markdown-ol"
       }, children);
     },
-    li: _ref1 => {
+    li: _ref13 => {
       let {
         children
-      } = _ref1;
+      } = _ref13;
       return /*#__PURE__*/_react.default.createElement("li", {
         className: "markdown-li"
       }, children);
     },
     // Style paragraphs
-    p: _ref10 => {
+    p: _ref14 => {
       let {
         children
-      } = _ref10;
+      } = _ref14;
       return /*#__PURE__*/_react.default.createElement("p", {
         className: "markdown-p"
       }, children);
@@ -252,7 +362,9 @@ function AIChatWidget(_ref) {
       onClick: () => setOpen(true),
       title: title,
       "aria-label": `Open ${title}`
-    }, "\uD83E\uDD16"));
+    }, /*#__PURE__*/_react.default.createElement(IconBot, {
+      size: 22
+    })));
   }
   return /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-container"
@@ -264,20 +376,26 @@ function AIChatWidget(_ref) {
     className: "ai-chat-widget-title-section"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-icon"
-  }, "\uD83E\uDD16"), /*#__PURE__*/_react.default.createElement("h3", {
+  }, /*#__PURE__*/_react.default.createElement(IconBot, {
+    size: 18
+  })), /*#__PURE__*/_react.default.createElement("h3", {
     className: "ai-chat-widget-title"
   }, title)), /*#__PURE__*/_react.default.createElement("button", {
     className: "ai-chat-widget-close",
     onClick: () => setOpen(false),
     title: "Close",
     "aria-label": "Close chat"
-  }, "\u2715")), /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement(IconClose, {
+    size: 18
+  }))), /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-body"
   }, lines.length === 0 && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-welcome"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "welcome-icon"
-  }, "\uD83D\uDC4B"), /*#__PURE__*/_react.default.createElement("p", null, "Hi! I'm here to help. Ask me anything!")), lines.map(line => /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement(IconBot, {
+    size: 40
+  })), /*#__PURE__*/_react.default.createElement("p", null, "Hi! I'm here to help. Ask me anything!")), lines.map(line => /*#__PURE__*/_react.default.createElement("div", {
     key: line.id,
     className: `ai-chat-widget-line ai-chat-widget-line-${line.role}`
   }, /*#__PURE__*/_react.default.createElement("div", {
@@ -292,7 +410,7 @@ function AIChatWidget(_ref) {
     className: "typing-indicator"
   }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking..."), hasFirstAIResponse && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-disclaimer"
-  }, /*#__PURE__*/_react.default.createElement("p", null, "AI can make mistakes. Please verify important information.")), /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("p", null, "L'AI peut faire des erreurs. Veuillez v\xE9rifier les informations importantes.")), /*#__PURE__*/_react.default.createElement("div", {
     ref: messagesEndRef
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-footer"
@@ -317,6 +435,6 @@ function AIChatWidget(_ref) {
     disabled: !canSend || !inputValue.trim(),
     title: "Send message",
     "aria-label": "Send message"
-  }, busy ? '⏳' : '↑'))))));
+  }, busy ? /*#__PURE__*/_react.default.createElement(IconSpinner, null) : /*#__PURE__*/_react.default.createElement(IconSend, null)))))));
 }
 //# sourceMappingURL=AIChatWidget.js.map
