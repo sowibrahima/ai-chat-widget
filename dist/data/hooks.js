@@ -316,12 +316,20 @@ const useCourseGeneration = () => {
     setError(null);
     try {
       const client = (0, _auth.getAuthenticatedHttpClient)();
-      const response = await client.post(`/api/ai-assistant/generate/${jobData.course_id}/`, {
+      const payload = {
         job_type: jobData.job_type,
         instructions: jobData.instructions,
-        pdf_file: jobData.pdf_file,
-        model_config: jobData.model_config
-      });
+        input_type: jobData.input_type || 'file'
+      };
+      if (payload.input_type === 'file') {
+        // Back-compat: allow pdf_file to map to file_path
+        payload.file_path = jobData.file_path || jobData.pdf_file;
+      } else if (payload.input_type === 'url') {
+        payload.source_url = jobData.source_url;
+      } else if (payload.input_type === 'text') {
+        payload.source_text = jobData.source_text;
+      }
+      const response = await client.post(`/api/ai-assistant/generate/${jobData.course_id}/`, payload);
       return response.data;
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Failed to create generation job';
@@ -334,7 +342,7 @@ const useCourseGeneration = () => {
   const getJobStatus = async jobId => {
     try {
       const client = (0, _auth.getAuthenticatedHttpClient)();
-      const response = await client.get(`/api/ai-assistant/jobs/${jobId}/`);
+      const response = await client.get(`/api/ai-assistant/generate/jobs/${jobId}/`);
       return response.data;
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Failed to get job status';
@@ -345,7 +353,7 @@ const useCourseGeneration = () => {
     let courseId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
     try {
       const client = (0, _auth.getAuthenticatedHttpClient)();
-      const url = courseId ? `/api/ai-assistant/jobs/?course_id=${courseId}` : '/api/ai-assistant/jobs/';
+      const url = courseId ? `/api/ai-assistant/generate/jobs/?course_id=${courseId}` : '/api/ai-assistant/generate/jobs/';
       const response = await client.get(url);
       return response.data;
     } catch (err) {

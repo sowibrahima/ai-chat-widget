@@ -304,7 +304,7 @@ function AIChatWidget(_ref5) {
     if (error?.detail) {
       return error.detail;
     }
-    return 'Something went wrong. Please try again.';
+    return 'Quelque chose s\'est mal passé. Veuillez réessayer.';
   }
   async function handleSend() {
     const v = inputValue.trim();
@@ -361,7 +361,7 @@ function AIChatWidget(_ref5) {
       className: "ai-chat-widget-fab-button",
       onClick: () => setOpen(true),
       title: title,
-      "aria-label": `Open ${title}`
+      "aria-label": `Ouvrir ${title}`
     }, /*#__PURE__*/_react.default.createElement(IconBot, {
       size: 22
     })));
@@ -408,7 +408,7 @@ function AIChatWidget(_ref5) {
     className: "ai-chat-widget-line ai-chat-widget-line-assistant ai-chat-widget-typing"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "typing-indicator"
-  }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "Thinking..."), hasFirstAIResponse && /*#__PURE__*/_react.default.createElement("div", {
+  }, /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null), /*#__PURE__*/_react.default.createElement("span", null)), "R\xE9ponse en cours..."), hasFirstAIResponse && /*#__PURE__*/_react.default.createElement("div", {
     className: "ai-chat-widget-disclaimer"
   }, /*#__PURE__*/_react.default.createElement("p", null, "L'IA peut faire des erreurs. Veuillez v\xE9rifier les informations importantes.")), /*#__PURE__*/_react.default.createElement("div", {
     ref: messagesEndRef

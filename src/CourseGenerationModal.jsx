@@ -43,21 +43,20 @@ export default function CourseGenerationModal({
   onError = () => {},
   title = "AI Course Generation",
   maxFileSizeMB = 50,
-  courseId = null,
-  availableModels = [
-    { id: 'gpt-4o', name: 'GPT-4o (Recommended)', description: 'Best quality, slower' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'Faster, good quality' }
-  ]
+  courseId = null
 }) {
   const { uploadFile, createGenerationJob, getJobStatus, isLoading, error: hookError } = useCourseGeneration();
   const [file, setFile] = useState(null);
+  const [inputType, setInputType] = useState('file'); // 'file' | 'url' | 'text'
+  const [sourceUrl, setSourceUrl] = useState('');
+  const [sourceText, setSourceText] = useState('');
   const [instructions, setInstructions] = useState('');
-  const [selectedModel, setSelectedModel] = useState(availableModels[0]?.id || 'gpt-4o');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [currentJob, setCurrentJob] = useState(null);
   const [jobProgress, setJobProgress] = useState(0);
   const [jobStatus, setJobStatus] = useState('');
+  const [progressMessage, setProgressMessage] = useState('');
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -68,9 +67,12 @@ export default function CourseGenerationModal({
       return;
     }
 
-    // Validate file type
-    if (selectedFile.type !== 'application/pdf') {
-      setError('Please select a PDF file.');
+    // Validate file type by extension to allow multiple formats
+    const allowedExts = ['.pdf', '.docx', '.pptx', '.txt', '.md', '.rtf', '.png', '.jpg', '.jpeg', '.gif'];
+    const nameLower = selectedFile.name.toLowerCase();
+    const ext = nameLower.substring(nameLower.lastIndexOf('.'));
+    if (!allowedExts.includes(ext)) {
+      setError(`Unsupported file type: ${ext}. Allowed: ${allowedExts.join(', ')}`);
       setFile(null);
       return;
     }
@@ -95,6 +97,7 @@ export default function CourseGenerationModal({
         const jobData = await getJobStatus(currentJob.id);
         setJobProgress(jobData.progress_percent || 0);
         setJobStatus(jobData.status);
+        setProgressMessage(jobData.progress_message || '');
 
         if (jobData.status === 'completed') {
           setCurrentJob(null);
@@ -117,8 +120,22 @@ export default function CourseGenerationModal({
   }, [currentJob, getJobStatus, onSuccess, onError]);
 
   const handleGenerate = async () => {
-    if (!file || !instructions.trim()) {
-      setError('Please select a PDF file and provide instructions.');
+    // Basic validation by input type
+    if (!instructions.trim()) {
+      setError('Please provide instructions.');
+      return;
+    }
+
+    if (inputType === 'file' && !file) {
+      setError('Please select a file.');
+      return;
+    }
+    if (inputType === 'url' && !sourceUrl.trim()) {
+      setError('Please provide a source URL.');
+      return;
+    }
+    if (inputType === 'text' && !sourceText.trim()) {
+      setError('Please provide some text content.');
       return;
     }
 
@@ -133,20 +150,26 @@ export default function CourseGenerationModal({
     setJobStatus('starting');
 
     try {
-      // First upload the file
-      const uploadResult = await uploadFile(file);
-      
-      // Then create the generation job
-      const jobData = await createGenerationJob({
+      let jobPayload = {
         course_id: courseId,
         job_type: 'course_generation',
         instructions: instructions.trim(),
-        pdf_file: uploadResult.file_id,
-        model_config: {
-          model: selectedModel,
-          provider: 'openai'
-        }
-      });
+        input_type: inputType,
+      };
+
+      if (inputType === 'file') {
+        // Upload the file first
+        const uploadResult = await uploadFile(file);
+        jobPayload.file_path = uploadResult.file_path;
+        jobPayload.pdf_file = uploadResult.file_path; // back-compat
+      } else if (inputType === 'url') {
+        jobPayload.source_url = sourceUrl.trim();
+      } else if (inputType === 'text') {
+        jobPayload.source_text = sourceText.trim();
+      }
+
+      // Then create the generation job
+      const jobData = await createGenerationJob(jobPayload);
 
       setCurrentJob(jobData);
       setJobStatus('processing');
@@ -188,7 +211,7 @@ export default function CourseGenerationModal({
 
         <div className="course-generation-modal-body">
           <p className="course-generation-modal-description">
-            Upload a PDF document and provide instructions to generate comprehensive course content using AI.
+            Provide a source and instructions to generate comprehensive Open edX course content using AI. Supported inputs: PDF, Word (.docx), PowerPoint (.pptx), plaintext (.txt/.md/.rtf), images (.png/.jpg/.jpeg/.gif), or a web page URL.
           </p>
 
           {error && (
@@ -198,44 +221,68 @@ export default function CourseGenerationModal({
           )}
 
           <div className="course-generation-form">
+            {/* Input type selector */}
             <div className="form-group">
-              <label htmlFor="pdf-upload" className="form-label">
-                PDF Document (max {maxFileSizeMB}MB):
-              </label>
-              <input
-                id="pdf-upload"
-                type="file"
-                className="form-control"
-                accept=".pdf"
-                onChange={handleFileChange}
-                disabled={isGenerating}
-              />
-              {file && (
-                <div className="file-info">
-                  <span className="file-name"><IconFile />{file.name}</span>
-                  <span className="file-size">({(file.size / (1024 * 1024)).toFixed(1)}MB)</span>
-                </div>
-              )}
+              <label className="form-label">Source Type:</label>
+              <div className="btn-group" role="group" aria-label="Source type">
+                <button type="button" className={`btn ${inputType==='file' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setInputType('file')} disabled={isGenerating}>File</button>
+                <button type="button" className={`btn ${inputType==='url' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setInputType('url')} disabled={isGenerating}>URL</button>
+                <button type="button" className={`btn ${inputType==='text' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setInputType('text')} disabled={isGenerating}>Text</button>
+              </div>
             </div>
+            {inputType === 'file' && (
+              <div className="form-group">
+                <label htmlFor="source-upload" className="form-label">
+                  Upload File (max {maxFileSizeMB}MB):
+                </label>
+                <input
+                  id="source-upload"
+                  type="file"
+                  className="form-control"
+                  accept=".pdf,.docx,.pptx,.txt,.md,.rtf,.png,.jpg,.jpeg,.gif"
+                  onChange={handleFileChange}
+                  disabled={isGenerating}
+                />
+                {file && (
+                  <div className="file-info">
+                    <span className="file-name"><IconFile />{file.name}</span>
+                    <span className="file-size">({(file.size / (1024 * 1024)).toFixed(1)}MB)</span>
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="form-group">
-              <label htmlFor="model-select" className="form-label">
-                AI Model:
-              </label>
-              <select
-                id="model-select"
-                className="form-control"
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                disabled={isGenerating}
-              >
-                {availableModels.map(model => (
-                  <option key={model.id} value={model.id}>
-                    {model.name} - {model.description}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {inputType === 'url' && (
+              <div className="form-group">
+                <label htmlFor="source-url" className="form-label">Web Page URL:</label>
+                <input
+                  id="source-url"
+                  type="url"
+                  className="form-control"
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                  placeholder="https://example.com/article"
+                  disabled={isGenerating}
+                />
+              </div>
+            )}
+
+            {inputType === 'text' && (
+              <div className="form-group">
+                <label htmlFor="source-text" className="form-label">Paste Text:</label>
+                <textarea
+                  id="source-text"
+                  className="form-control"
+                  rows="6"
+                  value={sourceText}
+                  onChange={(e) => setSourceText(e.target.value)}
+                  placeholder="Paste your source text here..."
+                  disabled={isGenerating}
+                />
+              </div>
+            )}
+
+            
 
             <div className="form-group">
               <label htmlFor="instructions" className="form-label">
@@ -267,7 +314,7 @@ export default function CourseGenerationModal({
                     ></div>
                   </div>
                   <div className="progress-text">
-                    {jobProgress}% - {jobStatus}
+                    {jobProgress}% - {jobStatus}{progressMessage ? ` — ${progressMessage}` : ''}
                   </div>
                 </div>
               </div>
@@ -288,7 +335,13 @@ export default function CourseGenerationModal({
             type="button"
             className="btn btn-primary"
             onClick={handleGenerate}
-            disabled={!file || !instructions.trim() || isGenerating}
+            disabled={
+              isGenerating ||
+              !instructions.trim() ||
+              (inputType === 'file' && !file) ||
+              (inputType === 'url' && !sourceUrl.trim()) ||
+              (inputType === 'text' && !sourceText.trim())
+            }
           >
             {isGenerating ? (
               <>

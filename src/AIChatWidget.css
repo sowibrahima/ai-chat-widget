@@ -492,6 +492,8 @@
   max-height: 90vh;
   overflow: hidden;
   animation: slideInModal 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideInModal {
@@ -543,6 +545,9 @@
 
 .course-generation-modal-body {
   padding: 24px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0; /* important for flex containers so child can shrink */
 }
 
 .course-generation-modal-footer {
@@ -550,6 +555,16 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+  background: #ffffff; /* ensure footer remains visible over scrolling body */
+  border-top: 1px solid var(--border);
+}
+
+/* Limit textarea growth inside the modal so the footer stays visible */
+.course-generation-modal textarea.form-control {
+  min-height: 96px;
+  max-height: 240px;
+  overflow: auto;
+  resize: vertical;
 }
 
 .form-group {

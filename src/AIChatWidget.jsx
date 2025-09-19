@@ -134,7 +134,7 @@ export default function AIChatWidget({
       return error.detail;
     }
     
-    return 'Something went wrong. Please try again.';
+    return 'Quelque chose s\'est mal passé. Veuillez réessayer.';
   }
 
   async function handleSend() {
@@ -198,7 +198,7 @@ export default function AIChatWidget({
           className="ai-chat-widget-fab-button"
           onClick={() => setOpen(true)}
           title={title}
-          aria-label={`Open ${title}`}
+          aria-label={`Ouvrir ${title}`}
         >
           <IconBot size={22} />
         </button>
@@ -250,7 +250,7 @@ export default function AIChatWidget({
                 <span></span>
                 <span></span>
               </div>
-              Thinking...
+              Réponse en cours...
             </div>
           )}
           {hasFirstAIResponse && (

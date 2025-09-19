@@ -134,16 +134,7 @@ function CourseGenerationModal(_ref5) {
     onError = () => {},
     title = "AI Course Generation",
     maxFileSizeMB = 50,
-    courseId = null,
-    availableModels = [{
-      id: 'gpt-4o',
-      name: 'GPT-4o (Recommended)',
-      description: 'Best quality, slower'
-    }, {
-      id: 'gpt-4o-mini',
-      name: 'GPT-4o Mini',
-      description: 'Faster, good quality'
-    }]
+    courseId = null
   } = _ref5;
   const {
     uploadFile,
@@ -153,13 +144,16 @@ function CourseGenerationModal(_ref5) {
     error: hookError
   } = (0, _hooks.useCourseGeneration)();
   const [file, setFile] = (0, _react.useState)(null);
+  const [inputType, setInputType] = (0, _react.useState)('file'); // 'file' | 'url' | 'text'
+  const [sourceUrl, setSourceUrl] = (0, _react.useState)('');
+  const [sourceText, setSourceText] = (0, _react.useState)('');
   const [instructions, setInstructions] = (0, _react.useState)('');
-  const [selectedModel, setSelectedModel] = (0, _react.useState)(availableModels[0]?.id || 'gpt-4o');
   const [isGenerating, setIsGenerating] = (0, _react.useState)(false);
   const [error, setError] = (0, _react.useState)('');
   const [currentJob, setCurrentJob] = (0, _react.useState)(null);
   const [jobProgress, setJobProgress] = (0, _react.useState)(0);
   const [jobStatus, setJobStatus] = (0, _react.useState)('');
+  const [progressMessage, setProgressMessage] = (0, _react.useState)('');
   const handleFileChange = e => {
     const selectedFile = e.target.files[0];
     setError('');
@@ -168,9 +162,12 @@ function CourseGenerationModal(_ref5) {
       return;
     }
 
-    // Validate file type
-    if (selectedFile.type !== 'application/pdf') {
-      setError('Please select a PDF file.');
+    // Validate file type by extension to allow multiple formats
+    const allowedExts = ['.pdf', '.docx', '.pptx', '.txt', '.md', '.rtf', '.png', '.jpg', '.jpeg', '.gif'];
+    const nameLower = selectedFile.name.toLowerCase();
+    const ext = nameLower.substring(nameLower.lastIndexOf('.'));
+    if (!allowedExts.includes(ext)) {
+      setError(`Unsupported file type: ${ext}. Allowed: ${allowedExts.join(', ')}`);
       setFile(null);
       return;
     }
@@ -193,6 +190,7 @@ function CourseGenerationModal(_ref5) {
         const jobData = await getJobStatus(currentJob.id);
         setJobProgress(jobData.progress_percent || 0);
         setJobStatus(jobData.status);
+        setProgressMessage(jobData.progress_message || '');
         if (jobData.status === 'completed') {
           setCurrentJob(null);
           setIsGenerating(false);
@@ -212,8 +210,21 @@ function CourseGenerationModal(_ref5) {
     return () => clearInterval(interval);
   }, [currentJob, getJobStatus, onSuccess, onError]);
   const handleGenerate = async () => {
-    if (!file || !instructions.trim()) {
-      setError('Please select a PDF file and provide instructions.');
+    // Basic validation by input type
+    if (!instructions.trim()) {
+      setError('Please provide instructions.');
+      return;
+    }
+    if (inputType === 'file' && !file) {
+      setError('Please select a file.');
+      return;
+    }
+    if (inputType === 'url' && !sourceUrl.trim()) {
+      setError('Please provide a source URL.');
+      return;
+    }
+    if (inputType === 'text' && !sourceText.trim()) {
+      setError('Please provide some text content.');
       return;
     }
     if (!courseId) {
@@ -225,20 +236,25 @@ function CourseGenerationModal(_ref5) {
     setJobProgress(0);
     setJobStatus('starting');
     try {
-      // First upload the file
-      const uploadResult = await uploadFile(file);
-
-      // Then create the generation job
-      const jobData = await createGenerationJob({
+      let jobPayload = {
         course_id: courseId,
         job_type: 'course_generation',
         instructions: instructions.trim(),
-        pdf_file: uploadResult.file_id,
-        model_config: {
-          model: selectedModel,
-          provider: 'openai'
-        }
-      });
+        input_type: inputType
+      };
+      if (inputType === 'file') {
+        // Upload the file first
+        const uploadResult = await uploadFile(file);
+        jobPayload.file_path = uploadResult.file_path;
+        jobPayload.pdf_file = uploadResult.file_path; // back-compat
+      } else if (inputType === 'url') {
+        jobPayload.source_url = sourceUrl.trim();
+      } else if (inputType === 'text') {
+        jobPayload.source_text = sourceText.trim();
+      }
+
+      // Then create the generation job
+      const jobData = await createGenerationJob(jobPayload);
       setCurrentJob(jobData);
       setJobStatus('processing');
     } catch (err) {
@@ -276,20 +292,43 @@ function CourseGenerationModal(_ref5) {
     className: "course-generation-modal-body"
   }, /*#__PURE__*/_react.default.createElement("p", {
     className: "course-generation-modal-description"
-  }, "Upload a PDF document and provide instructions to generate comprehensive course content using AI."), error && /*#__PURE__*/_react.default.createElement("div", {
+  }, "Provide a source and instructions to generate comprehensive Open edX course content using AI. Supported inputs: PDF, Word (.docx), PowerPoint (.pptx), plaintext (.txt/.md/.rtf), images (.png/.jpg/.jpeg/.gif), or a web page URL."), error && /*#__PURE__*/_react.default.createElement("div", {
     className: "course-generation-modal-error"
   }, error), /*#__PURE__*/_react.default.createElement("div", {
     className: "course-generation-form"
   }, /*#__PURE__*/_react.default.createElement("div", {
     className: "form-group"
   }, /*#__PURE__*/_react.default.createElement("label", {
-    htmlFor: "pdf-upload",
     className: "form-label"
-  }, "PDF Document (max ", maxFileSizeMB, "MB):"), /*#__PURE__*/_react.default.createElement("input", {
-    id: "pdf-upload",
+  }, "Source Type:"), /*#__PURE__*/_react.default.createElement("div", {
+    className: "btn-group",
+    role: "group",
+    "aria-label": "Source type"
+  }, /*#__PURE__*/_react.default.createElement("button", {
+    type: "button",
+    className: `btn ${inputType === 'file' ? 'btn-primary' : 'btn-outline'}`,
+    onClick: () => setInputType('file'),
+    disabled: isGenerating
+  }, "File"), /*#__PURE__*/_react.default.createElement("button", {
+    type: "button",
+    className: `btn ${inputType === 'url' ? 'btn-primary' : 'btn-outline'}`,
+    onClick: () => setInputType('url'),
+    disabled: isGenerating
+  }, "URL"), /*#__PURE__*/_react.default.createElement("button", {
+    type: "button",
+    className: `btn ${inputType === 'text' ? 'btn-primary' : 'btn-outline'}`,
+    onClick: () => setInputType('text'),
+    disabled: isGenerating
+  }, "Text"))), inputType === 'file' && /*#__PURE__*/_react.default.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/_react.default.createElement("label", {
+    htmlFor: "source-upload",
+    className: "form-label"
+  }, "Upload File (max ", maxFileSizeMB, "MB):"), /*#__PURE__*/_react.default.createElement("input", {
+    id: "source-upload",
     type: "file",
     className: "form-control",
-    accept: ".pdf",
+    accept: ".pdf,.docx,.pptx,.txt,.md,.rtf,.png,.jpg,.jpeg,.gif",
     onChange: handleFileChange,
     disabled: isGenerating
   }), file && /*#__PURE__*/_react.default.createElement("div", {
@@ -298,21 +337,33 @@ function CourseGenerationModal(_ref5) {
     className: "file-name"
   }, /*#__PURE__*/_react.default.createElement(IconFile, null), file.name), /*#__PURE__*/_react.default.createElement("span", {
     className: "file-size"
-  }, "(", (file.size / (1024 * 1024)).toFixed(1), "MB)"))), /*#__PURE__*/_react.default.createElement("div", {
+  }, "(", (file.size / (1024 * 1024)).toFixed(1), "MB)"))), inputType === 'url' && /*#__PURE__*/_react.default.createElement("div", {
     className: "form-group"
   }, /*#__PURE__*/_react.default.createElement("label", {
-    htmlFor: "model-select",
+    htmlFor: "source-url",
     className: "form-label"
-  }, "AI Model:"), /*#__PURE__*/_react.default.createElement("select", {
-    id: "model-select",
+  }, "Web Page URL:"), /*#__PURE__*/_react.default.createElement("input", {
+    id: "source-url",
+    type: "url",
     className: "form-control",
-    value: selectedModel,
-    onChange: e => setSelectedModel(e.target.value),
+    value: sourceUrl,
+    onChange: e => setSourceUrl(e.target.value),
+    placeholder: "https://example.com/article",
     disabled: isGenerating
-  }, availableModels.map(model => /*#__PURE__*/_react.default.createElement("option", {
-    key: model.id,
-    value: model.id
-  }, model.name, " - ", model.description)))), /*#__PURE__*/_react.default.createElement("div", {
+  })), inputType === 'text' && /*#__PURE__*/_react.default.createElement("div", {
+    className: "form-group"
+  }, /*#__PURE__*/_react.default.createElement("label", {
+    htmlFor: "source-text",
+    className: "form-label"
+  }, "Paste Text:"), /*#__PURE__*/_react.default.createElement("textarea", {
+    id: "source-text",
+    className: "form-control",
+    rows: "6",
+    value: sourceText,
+    onChange: e => setSourceText(e.target.value),
+    placeholder: "Paste your source text here...",
+    disabled: isGenerating
+  })), /*#__PURE__*/_react.default.createElement("div", {
     className: "form-group"
   }, /*#__PURE__*/_react.default.createElement("label", {
     htmlFor: "instructions",
@@ -343,7 +394,7 @@ function CourseGenerationModal(_ref5) {
     }
   })), /*#__PURE__*/_react.default.createElement("div", {
     className: "progress-text"
-  }, jobProgress, "% - ", jobStatus))))), /*#__PURE__*/_react.default.createElement("div", {
+  }, jobProgress, "% - ", jobStatus, progressMessage ? ` — ${progressMessage}` : ''))))), /*#__PURE__*/_react.default.createElement("div", {
     className: "course-generation-modal-footer"
   }, /*#__PURE__*/_react.default.createElement("button", {
     type: "button",
@@ -354,7 +405,7 @@ function CourseGenerationModal(_ref5) {
     type: "button",
     className: "btn btn-primary",
     onClick: handleGenerate,
-    disabled: !file || !instructions.trim() || isGenerating
+    disabled: isGenerating || !instructions.trim() || inputType === 'file' && !file || inputType === 'url' && !sourceUrl.trim() || inputType === 'text' && !sourceText.trim()
   }, isGenerating ? /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(IconSpinner, null), "Generating...") : /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(IconWand, null), "Generate Course")))));
 }
 //# sourceMappingURL=CourseGenerationModal.js.map

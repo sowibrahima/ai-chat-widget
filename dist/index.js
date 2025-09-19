@@ -236,16 +236,7 @@ function openCourseGenerationModal() {
       courseId: courseId,
       onClose: handleClose,
       onSuccess: handleSuccess,
-      onError: handleError,
-      availableModels: [{
-        id: 'gpt-4o',
-        name: 'GPT-4o (Recommended)',
-        description: 'Best quality, slower'
-      }, {
-        id: 'gpt-4o-mini',
-        name: 'GPT-4o Mini',
-        description: 'Faster, good quality'
-      }]
+      onError: handleError
     };
     window.ReactDOM.render(window.React.createElement(_CourseGenerationModal.default, modalProps), modalContainer);
   } else {
@@ -263,7 +254,7 @@ function showSimpleCourseGenerationModal(courseId, onSuccess, onError, onClose) 
           <div class="modal-header">
             <h5 class="modal-title">
               <span class="fa fa-magic" style="margin-right: 8px;"></span>
-              AI Course Generation
+              Génération de cours avec IA
             </h5>
             <button type="button" class="close" onclick="window.WSAIAssistant.closeCourseGenerationModal()">
               <span>&times;</span>
@@ -277,14 +268,7 @@ function showSimpleCourseGenerationModal(courseId, onSuccess, onError, onClose) 
                 <small class="text-muted">Upload a PDF document (max 50MB)</small>
               </div>
               <div class="form-group">
-                <label>AI Model:</label>
-                <select class="form-control" id="ws-ai-model">
-                  <option value="gpt-4o">GPT-4o (Recommended) - Best quality, slower</option>
-                  <option value="gpt-4o-mini">GPT-4o Mini - Faster, good quality</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Generation Instructions:</label>
+                <label>Instructions de génération:</label>
                 <textarea class="form-control" id="ws-ai-instructions" rows="4" maxlength="1000" required
                   placeholder="Describe what kind of course content you want to generate. For example: 'Create a comprehensive course with modules, lessons, quizzes, and assignments based on this document. Focus on practical applications and include interactive elements.'"></textarea>
                 <small class="text-muted">
@@ -292,7 +276,7 @@ function showSimpleCourseGenerationModal(courseId, onSuccess, onError, onClose) 
                 </small>
               </div>
               <div id="ws-ai-progress" class="form-group" style="display: none;">
-                <label>Generation Progress:</label>
+                <label>Progression de la génération:</label>
                 <div class="progress">
                   <div id="ws-ai-progress-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
                 </div>
@@ -302,10 +286,10 @@ function showSimpleCourseGenerationModal(courseId, onSuccess, onError, onClose) 
             </form>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn-ai-chat btn-ai-chat-secondary" onclick="window.WSAIAssistant.closeCourseGenerationModal()">Cancel</button>
+            <button type="button" class="btn-ai-chat btn-ai-chat-secondary" onclick="window.WSAIAssistant.closeCourseGenerationModal()">Annuler</button>
             <button type="button" class="btn-ai-chat btn-ai-chat-primary" id="ws-ai-submit">
               <span class="fa fa-magic" style="margin-right: 6px;"></span>
-              Generate Course
+              Générer le cours
             </button>
           </div>
         </div>
@@ -341,7 +325,6 @@ function showSimpleCourseGenerationModal(courseId, onSuccess, onError, onClose) 
 }
 function handleSimpleFormSubmit(courseId, onSuccess, onError) {
   const fileInput = document.getElementById('ws-ai-file');
-  const modelSelect = document.getElementById('ws-ai-model');
   const instructionsTextarea = document.getElementById('ws-ai-instructions');
   const submitBtn = document.getElementById('ws-ai-submit');
   const progressDiv = document.getElementById('ws-ai-progress');
@@ -350,7 +333,6 @@ function handleSimpleFormSubmit(courseId, onSuccess, onError) {
   const errorDiv = document.getElementById('ws-ai-error');
   const file = fileInput.files[0];
   const instructions = instructionsTextarea.value.trim();
-  const model = modelSelect.value;
   if (!file || !instructions) {
     showSimpleError('Please fill in all required fields');
     return;
@@ -362,7 +344,7 @@ function handleSimpleFormSubmit(courseId, onSuccess, onError) {
 
   // Show progress
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Generating...';
+  submitBtn.textContent = 'Génération...';
   progressDiv.style.display = 'block';
   errorDiv.style.display = 'none';
 
@@ -390,11 +372,8 @@ function handleSimpleFormSubmit(courseId, onSuccess, onError) {
       body: JSON.stringify({
         job_type: 'course_generation',
         instructions: instructions,
-        pdf_file: uploadResult.file_id,
-        model_config: {
-          model: model,
-          provider: 'openai'
-        }
+        input_type: 'file',
+        file_path: uploadResult.file_path
       })
     });
   }).then(response => response.json()).then(jobResult => {
@@ -404,7 +383,7 @@ function handleSimpleFormSubmit(courseId, onSuccess, onError) {
   }).catch(error => {
     showSimpleError(error.message);
     submitBtn.disabled = false;
-    submitBtn.innerHTML = '<span class="fa fa-magic" style="margin-right: 6px;"></span>Generate Course';
+    submitBtn.innerHTML = '<span class="fa fa-magic" style="margin-right: 6px;"></span>Générer le cours';
   });
   function showSimpleError(message) {
     errorDiv.textContent = message;
@@ -413,7 +392,7 @@ function handleSimpleFormSubmit(courseId, onSuccess, onError) {
 }
 function startSimplePolling(jobId, progressBar, statusText, onSuccess, onError) {
   const pollInterval = setInterval(() => {
-    fetch(`/api/ai-assistant/jobs/${jobId}/`, {
+    fetch(`/api/ai-assistant/generate/jobs/${jobId}/`, {
       credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCsrfToken()
@@ -426,12 +405,12 @@ function startSimplePolling(jobId, progressBar, statusText, onSuccess, onError) 
         clearInterval(pollInterval);
         onSuccess({
           jobId: jobData.id,
-          message: 'Course generation completed successfully!',
+          message: 'Génération du cours terminée avec succès!',
           jobData: jobData
         });
       } else if (jobData.status === 'failed') {
         clearInterval(pollInterval);
-        onError(new Error(jobData.error_message || 'Course generation failed'));
+        onError(new Error(jobData.error_message || 'Génération du cours échouée'));
       }
     }).catch(error => {
       console.error('Polling error:', error);
