@@ -20,7 +20,7 @@ const IconWand = ({ size = 16, ...props }) => (
  * - Can be easily imported and used in Tutor plugin slots
  */
 export default function CourseGenerationButton({
-  buttonText = "AI Generate",
+  buttonText = "Générer avec IA",
   buttonIcon = null,
   buttonClassName = "btn btn-primary",
   maxFileSizeMB = 50,
@@ -37,13 +37,13 @@ export default function CourseGenerationButton({
   const handleSuccess = (jobData) => {
     onSuccess({
       jobId: jobData.id,
-      message: 'Course generation completed successfully!',
+      message: 'Génération du cours terminée avec succès!',
       jobData: jobData
     });
   };
 
   const handleError = (error) => {
-    console.error('Course generation error:', error);
+    console.error('Erreur de génération du cours:', error);
     onError(error);
   };
 
@@ -53,8 +53,8 @@ export default function CourseGenerationButton({
         className={buttonClassName}
         onClick={() => setShowModal(true)}
         disabled={!courseId}
-        title={!courseId ? "Course context required" : "Generate course content with AI"}
-        aria-label="Generate course content with AI"
+        title={!courseId ? "Contexte du cours requis" : "Générer avec IA"}
+        aria-label="Générer avec IA"
       >
         <span className="icon" style={{ marginRight: '8px' }}>
           {React.isValidElement(buttonIcon) ? buttonIcon : <IconWand />}

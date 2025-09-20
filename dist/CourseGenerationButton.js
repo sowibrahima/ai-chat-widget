@@ -50,7 +50,7 @@ const IconWand = _ref => {
  */
 function CourseGenerationButton(_ref2) {
   let {
-    buttonText = "AI Generate",
+    buttonText = "Générer avec IA",
     buttonIcon = null,
     buttonClassName = "btn btn-primary",
     maxFileSizeMB = 50,
@@ -71,20 +71,20 @@ function CourseGenerationButton(_ref2) {
   const handleSuccess = jobData => {
     onSuccess({
       jobId: jobData.id,
-      message: 'Course generation completed successfully!',
+      message: 'Génération du cours terminée avec succès!',
       jobData: jobData
     });
   };
   const handleError = error => {
-    console.error('Course generation error:', error);
+    console.error('Erreur de génération du cours:', error);
     onError(error);
   };
   return /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement("button", {
     className: buttonClassName,
     onClick: () => setShowModal(true),
     disabled: !courseId,
-    title: !courseId ? "Course context required" : "Generate course content with AI",
-    "aria-label": "Generate course content with AI"
+    title: !courseId ? "Contexte du cours requis" : "Générer avec IA",
+    "aria-label": "G\xE9n\xE9rer avec IA"
   }, /*#__PURE__*/_react.default.createElement("span", {
     className: "icon",
     style: {
